@@ -1,4 +1,4 @@
-package com.example.bodifyaifitness
+package com.example.bodifyaifitness.composable
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,19 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.NotStarted
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.bodifyaifitness.dataclass.NavItem
 import com.example.bodifyaifitness.pages.AccountPage
 import com.example.bodifyaifitness.pages.ExplorerPage
 import com.example.bodifyaifitness.pages.HistoryPage

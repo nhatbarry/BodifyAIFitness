@@ -1,6 +1,5 @@
-package com.example.bodifyaifitness
+package com.example.bodifyaifitness.dataclass
 
-import android.R
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class NavItem(
