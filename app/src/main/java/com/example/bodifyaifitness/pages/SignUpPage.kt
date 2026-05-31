@@ -1,11 +1,252 @@
 package com.example.bodifyaifitness.pages
 
-import androidx.compose.runtime.Composable
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.bodifyaifitness.R
+import com.example.bodifyaifitness.viewmodel.AuthState
 import com.example.bodifyaifitness.viewmodel.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel){
+fun SignUpPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel
+) {
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    val primaryOrange = Color(0xFFFF5722)
+    val surfaceDark = Color(0xFF1E1E1E)
+    val textGray = Color(0xFFAAAAAA)
+
+    val authState = authViewModel.authState.observeAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Error -> {
+                val errorMessage = (authState.value as AuthState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+            is AuthState.Authenticated -> {
+                Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
+                navController.navigate("login_page")
+            }
+            else -> {}
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+
+        Image(
+            painter = painterResource(id = R.drawable.bg),
+            contentDescription = "Background Image",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "CREATE ACCOUNT",
+                color = primaryOrange,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = "Join the Bodify AI community today",
+                color = textGray,
+                fontSize = 15.sp,
+                modifier = Modifier.padding(top = 8.dp, bottom = 36.dp)
+            )
+
+            OutlinedTextField(
+                value = fullName,
+                onValueChange = { fullName = it },
+                label = { Text("Họ và tên", color = textGray) },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "User Icon", tint = primaryOrange) },
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = primaryOrange,
+                    unfocusedIndicatorColor = textGray,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = surfaceDark,
+                    unfocusedContainerColor = surfaceDark,
+                    cursorColor = primaryOrange,
+                    focusedLabelColor = primaryOrange,
+                    unfocusedLabelColor = textGray
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email", color = textGray) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = primaryOrange) },
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = primaryOrange,
+                    unfocusedIndicatorColor = textGray,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = surfaceDark,
+                    unfocusedContainerColor = surfaceDark,
+                    cursorColor = primaryOrange,
+                    focusedLabelColor = primaryOrange,
+                    unfocusedLabelColor = textGray
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Mật khẩu", color = textGray) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon", tint = primaryOrange) },
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = "Toggle Password", tint = textGray)
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = primaryOrange,
+                    unfocusedIndicatorColor = textGray,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = surfaceDark,
+                    unfocusedContainerColor = surfaceDark,
+                    cursorColor = primaryOrange,
+                    focusedLabelColor = primaryOrange,
+                    unfocusedLabelColor = textGray
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Xác nhận mật khẩu", color = textGray) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon", tint = primaryOrange) },
+                trailingIcon = {
+                    val image = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(imageVector = image, contentDescription = "Toggle Confirm Password", tint = textGray)
+                    }
+                },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = primaryOrange,
+                    unfocusedIndicatorColor = textGray,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = surfaceDark,
+                    unfocusedContainerColor = surfaceDark,
+                    cursorColor = primaryOrange,
+                    focusedLabelColor = primaryOrange,
+                    unfocusedLabelColor = textGray
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    authViewModel.signUp(email, password)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = primaryOrange),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(text = "ĐĂNG KÝ NGAY", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Đã có tài khoản? ", color = textGray, fontSize = 15.sp)
+                Text(
+                    text = "Đăng nhập",
+                    color = primaryOrange,
+                    textDecoration = TextDecoration.Underline,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .clickable {
+                            navController.popBackStack()
+                        }
+                        .padding(4.dp)
+                )
+            }
+        }
+    }
 }

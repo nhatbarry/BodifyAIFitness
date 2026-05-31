@@ -1,5 +1,6 @@
 package com.example.bodifyaifitness.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,19 +14,23 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.bodifyaifitness.R
+import com.example.bodifyaifitness.viewmodel.AuthState
 import com.example.bodifyaifitness.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +47,24 @@ fun LoginPage(
     val primaryOrange = Color(0xFFFF5722)
     val surfaceDark = Color(0xFF1E1E1E)
     val textGray = Color(0xFFAAAAAA)
+
+    val authState = authViewModel.authState.observeAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Error -> {
+                val errorMessage = (authState.value as AuthState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+            is AuthState.Authenticated -> {
+                Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                navController.navigate("main_app")
+            }
+            else -> {}
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
 
@@ -147,7 +170,7 @@ fun LoginPage(
 
             Button(
                 onClick = {
-                    // authViewModel.login(email, password)
+                    authViewModel.login(email, password)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = primaryOrange),
                 shape = RoundedCornerShape(12.dp),
@@ -168,12 +191,13 @@ fun LoginPage(
                 Text(text = "Chưa có tài khoản? ", color = textGray, fontSize = 15.sp)
                 Text(
                     text = "Đăng ký ngay",
+                    textDecoration = TextDecoration.Underline,
                     color = primaryOrange,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .clickable {
-                            navController.navigate("register_page")
+                            navController.navigate("sign_up_page")
                         }
                         .padding(4.dp)
                 )

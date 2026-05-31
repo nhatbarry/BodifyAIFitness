@@ -18,5 +18,6 @@ data class CompleteExercise(
 data class ExerciseSet(
     val reps: Int = 0,
     val weight: Double = 0.0,
+    val duration: Double = 0.0,
     val isAiTracked: Boolean = false,
 )
