@@ -57,15 +57,31 @@ class FirebaseManager {
         db.collection("exercises_library")
             .get()
             .addOnSuccessListener { result ->
-                val exerciseList = mutableListOf<Exercise>()
-                for (document in result) {
-                    val exercise = document.toObject<Exercise>()
-                    exerciseList.add(exercise)
+                val exerciseList = result.mapNotNull { document ->
+                    document.toObject<Exercise>()?.copy(id = document.id)
                 }
                 onSuccess(exerciseList)
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Lỗi lấy thư viện bài tập", e)
+                onFailure(e)
+            }
+    }
+
+    fun getExerciseById(exerciseId: String, onSuccess: (Exercise?) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("exercises_library")
+            .document(exerciseId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val exercise = document.toObject<Exercise>()?.copy(id = document.id)
+                    onSuccess(exercise)
+                } else {
+                    onSuccess(null)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Lỗi lấy bài tập theo ID", e)
                 onFailure(e)
             }
     }

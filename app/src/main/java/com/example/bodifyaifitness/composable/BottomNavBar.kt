@@ -31,7 +31,7 @@ import com.example.bodifyaifitness.pages.StartPage
 import com.example.bodifyaifitness.viewmodel.AuthViewModel
 
 @Composable
-fun NavBar(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
+fun NavBar(modifier: Modifier = Modifier, rootNavController: NavController, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
 
     val navItemList = listOf(
@@ -78,11 +78,16 @@ fun NavBar(modifier: Modifier = Modifier, navController: NavController, authView
             startDestination = "explorer_page",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("explorer_page") { ExplorerPage() }
+            composable("explorer_page") { ExplorerPage(navController = rootNavController) }
             composable("schedule_page") { SchedulePage() }
             composable("start_page") { StartPage() }
             composable("history_page") { HistoryPage() }
-            composable("account_page") { AccountPage() }
+            composable("account_page") {
+                AccountPage(
+                    authViewModel = authViewModel,
+                    navController = rootNavController
+                )
+            }
         }
     }
 }
