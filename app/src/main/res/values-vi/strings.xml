@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bodify</string>
+    <string name="app_tagline">Tập thông minh. Sống mạnh mẽ.</string>
+
+    <!-- Common -->
+    <string name="label_email">Email</string>
+    <string name="label_password">Mật khẩu</string>
+    <string name="btn_cancel">Hủy</string>
+    <string name="btn_save">Lưu</string>
+    <string name="btn_done">Xong</string>
+    <string name="btn_create">Tạo</string>
+    <string name="content_desc_back">Quay lại</string>
+    <string name="content_desc_send">Gửi</string>
+
+    <!-- Login -->
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="btn_login">ĐĂNG NHẬP</string>
+    <string name="no_account">Chưa có tài khoản? </string>
+    <string name="sign_up_link">Đăng ký ngay</string>
+    <string name="toast_login_success">Đăng nhập thành công!</string>
+
+    <!-- Sign Up -->
+    <string name="title_create_account">TẠO TÀI KHOẢN</string>
+    <string name="subtitle_create_account">Tham gia cộng đồng Bodify AI ngay hôm nay</string>
+    <string name="label_confirm_password">Xác nhận mật khẩu</string>
+    <string name="error_password_min_length">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="error_password_mismatch">Mật khẩu xác nhận không khớp</string>
+    <string name="btn_sign_up">ĐĂNG KÝ NGAY</string>
+    <string name="already_have_account">Đã có tài khoản? </string>
+    <string name="login_link">Đăng nhập</string>
+    <string name="toast_signup_success">Đăng ký thành công!</string>
+
+    <!-- Setup Profile -->
+    <string name="title_setup">Chào mừng đến với Bodify! 🎉</string>
+    <string name="subtitle_setup">Cho chúng tôi biết thêm về bạn\nđể cá nhân hoá trải nghiệm tập luyện.</string>
+    <string name="label_body_stats">Thông số cơ thể</string>
+    <string name="label_height_cm">Chiều cao (cm)</string>
+    <string name="label_weight_kg">Cân nặng (kg)</string>
+    <string name="label_bmi">BMI:</string>
+    <string name="btn_save_start">LƯU &amp; BẮT ĐẦU</string>
+    <string name="btn_skip">Bỏ qua, điền sau</string>
+
+    <!-- BMI Categories -->
+    <string name="bmi_underweight">Thiếu cân</string>
+    <string name="bmi_normal">Bình thường</string>
+    <string name="bmi_overweight">Thừa cân</string>
+    <string name="bmi_obese">Béo phì</string>
+
+    <!-- Account -->
+    <string name="default_athlete">Vận động viên</string>
+    <string name="label_workouts">Buổi tập</string>
+    <string name="label_streak">Chuỗi</string>
+    <string name="label_volume">Khối lượng</string>
+    <string name="btn_edit_profile">Sửa hồ sơ</string>
+    <string name="btn_sign_out">Đăng xuất</string>
+    <string name="label_language">Ngôn ngữ</string>
+
+    <!-- Edit Profile -->
+    <string name="title_edit_profile">Chỉnh sửa hồ sơ</string>
+    <string name="label_display_name">Tên hiển thị</string>
+    <string name="label_height">Chiều cao (cm)</string>
+    <string name="label_weight">Cân nặng (kg)</string>
+    <string name="label_bmi_preview">Xem trước BMI:</string>
+    <string name="uploading_avatar">Đang upload…</string>
+    <string name="tap_to_change_photo">Nhấn để đổi ảnh</string>
+    <string name="btn_save_profile">Lưu hồ sơ</string>
+
+    <!-- BMI Card -->
+    <string name="title_bmi">Chỉ số khối cơ thể</string>
+    <string name="bmi_no_data">Thêm chiều cao &amp; cân nặng trong Sửa hồ sơ</string>
+    <string name="unit_bmi">kg/m²</string>
+    <string name="label_height_short">Chiều cao</string>
+    <string name="label_weight_short">Cân nặng</string>
+    <string name="label_ideal_weight">Cân nặng lý tưởng</string>
+
+    <!-- Workout Streak -->
+    <string name="title_workout_streak">Chuỗi tập luyện</string>
+    <string name="label_less">Ít hơn</string>
+    <string name="label_more">Nhiều hơn</string>
+    <string name="streak_days">%1$d ngày</string>
+
+    <!-- Featured Workout -->
+    <string name="title_daily_workout">Bài tập hàng ngày</string>
+    <string name="subtitle_daily_workout">Toàn thân • 45 phút</string>
+
+    <!-- Greeting -->
+    <string name="content_desc_notification">Thông báo</string>
+    <string name="greeting_subtitle">Sẵn sàng chinh phục buổi tập?</string>
+
+    <!-- Search -->
+    <string name="placeholder_search_all">Tìm kiếm tất cả bài tập…</string>
+    <string name="placeholder_search_category">Tìm kiếm trong %1$s…</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_explorer">Khám phá</string>
+    <string name="nav_schedule">Lịch tập</string>
+    <string name="nav_start">Bắt đầu</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_account">Tài khoản</string>
+
+    <!-- Greeting -->
+    <string name="greeting_with_name">Chào buổi sáng, %1$s 💪</string>
+
+    <!-- Schedule active/inactive -->
+    <string name="label_active">Đang dùng</string>
+    <string name="label_inactive">Tắt</string>
+    <string name="hint_swipe_delete">→ Vuốt phải: xóa</string>
+    <string name="hint_swipe_active">← Vuốt trái: bật/tắt</string>
+
+    <!-- Featured Workout -->
+    <string name="featured_no_schedule">Chưa có lịch tập active</string>
+    <string name="featured_rest_day">Hôm nay nghỉ — không có bài tập</string>
+    <string name="featured_exercises_today">Hôm nay có %1$d bài tập</string>
+    <string name="btn_start_workout">Bắt đầu</string>
+
+    <!-- Schedule Page -->
+    <string name="empty_schedules">Chưa có lịch tập nào</string>
+    <string name="empty_schedules_hint">Nhấn + để tạo lịch tập đầu tiên</string>
+    <string name="dialog_create_schedule_title">Tạo lịch tập mới</string>
+    <string name="placeholder_schedule_name">VD: PPL, Upper Lower…</string>
+    <string name="schedule_days_count">%1$d ngày tập</string>
+    <string name="schedule_created_date">Tạo lúc: %1$s</string>
+
+    <!-- Schedule Detail -->
+    <string name="calendar_month_year">Tháng %1$d Năm %2$d</string>
+    <string name="empty_workout_day">Chưa có bài tập nào</string>
+    <string name="empty_workout_day_hint">Nhấn + để thêm bài tập</string>
+    <string name="title_pick_exercises">Chọn bài tập</string>
+    <string name="placeholder_search_exercise">Tìm bài tập…</string>
+    <string name="btn_add_count">Thêm (%1$d)</string>
+    <string name="btn_paste">Paste</string>
+    <string name="btn_copy">Copy</string>
+    <string name="btn_add_exercise">Thêm bài tập</string>
+
+    <!-- Exercise -->
+    <string name="label_muscle_groups">Nhóm cơ</string>
+    <string name="label_equipment">Dụng cụ</string>
+    <string name="label_instructions">Hướng dẫn</string>
+    <string name="label_animation">Hoạt ảnh</string>
+    <string name="error_exercise_not_found">Không tìm thấy bài tập</string>
+    <string name="error_no_exercises">Không có bài tập nào</string>
+
+    <!-- AI Coach -->
+    <string name="title_ai_coach">AI Coach</string>
+    <string name="subtitle_ai_coach">Trợ lý Thể hình &amp; Dinh dưỡng</string>
+    <string name="placeholder_ai_chat">Hỏi AI Coach…</string>
+    <string name="ai_welcome_message">Xin chào! Tôi là AI Coach của bạn 💪\nHỏi tôi bất cứ điều gì về tập luyện, dinh dưỡng, hay lịch tập nhé!</string>
+    <string name="ai_error_message">Có lỗi xảy ra, vui lòng thử lại.</string>
+
+    <!-- Start / Workout Log -->
+    <string name="label_today">Hôm nay</string>
+    <string name="empty_today_workout">Hôm nay không có lịch tập</string>
+    <string name="empty_today_workout_hint">Thêm ngày tập vào lịch của bạn</string>
+    <string name="label_sets_count">%1$d sets</string>
+    <string name="label_last_set">Lần cuối: %1$.1fkg × %2$d reps</string>
+    <string name="label_no_sets_logged">Nhấn để ghi set</string>
+    <string name="label_weight_kgs">CÂN NẶNG (kgs)</string>
+    <string name="label_reps">SỐ REP</string>
+    <string name="btn_clear">XÓA</string>
+    <string name="label_set_row">%1$.1f kgs × %2$d reps</string>
+
+    <!-- Calendar day headers -->
+    <string-array name="calendar_day_headers">
+        <item>T2</item>
+        <item>T3</item>
+        <item>T4</item>
+        <item>T5</item>
+        <item>T6</item>
+        <item>T7</item>
+        <item>CN</item>
+    </string-array>
+</resources>

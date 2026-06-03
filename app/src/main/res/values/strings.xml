@@ -1,3 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BodifyAIFitness</string>
+    <string name="app_name">Bodify</string>
+    <string name="app_tagline">Train Smart. Live Strong.</string>
+
+    <!-- Common -->
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_create">Create</string>
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_send">Send</string>
+
+    <!-- Login -->
+    <string name="forgot_password">Forgot password?</string>
+    <string name="btn_login">SIGN IN</string>
+    <string name="no_account">Don\'t have an account? </string>
+    <string name="sign_up_link">Sign up now</string>
+    <string name="toast_login_success">Login successful!</string>
+
+    <!-- Sign Up -->
+    <string name="title_create_account">CREATE ACCOUNT</string>
+    <string name="subtitle_create_account">Join the Bodify AI community today</string>
+    <string name="label_confirm_password">Confirm password</string>
+    <string name="error_password_min_length">Password must be at least 6 characters</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="btn_sign_up">SIGN UP NOW</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="login_link">Sign in</string>
+    <string name="toast_signup_success">Account created successfully!</string>
+
+    <!-- Setup Profile -->
+    <string name="title_setup">Welcome to Bodify! 🎉</string>
+    <string name="subtitle_setup">Tell us about yourself\nto personalize your workout experience.</string>
+    <string name="label_body_stats">Body Stats</string>
+    <string name="label_height_cm">Height (cm)</string>
+    <string name="label_weight_kg">Weight (kg)</string>
+    <string name="label_bmi">BMI:</string>
+    <string name="btn_save_start">SAVE &amp; START</string>
+    <string name="btn_skip">Skip, fill in later</string>
+
+    <!-- BMI Categories -->
+    <string name="bmi_underweight">Underweight</string>
+    <string name="bmi_normal">Normal</string>
+    <string name="bmi_overweight">Overweight</string>
+    <string name="bmi_obese">Obese</string>
+
+    <!-- Account -->
+    <string name="default_athlete">Athlete</string>
+    <string name="label_workouts">Workouts</string>
+    <string name="label_streak">Streak</string>
+    <string name="label_volume">Volume</string>
+    <string name="btn_edit_profile">Edit Profile</string>
+    <string name="btn_sign_out">Sign Out</string>
+    <string name="label_language">Language</string>
+
+    <!-- Edit Profile -->
+    <string name="title_edit_profile">Edit Profile</string>
+    <string name="label_display_name">Display Name</string>
+    <string name="label_height">Height (cm)</string>
+    <string name="label_weight">Weight (kg)</string>
+    <string name="label_bmi_preview">BMI Preview:</string>
+    <string name="uploading_avatar">Uploading…</string>
+    <string name="tap_to_change_photo">Tap to change photo</string>
+    <string name="btn_save_profile">Save Profile</string>
+
+    <!-- BMI Card -->
+    <string name="title_bmi">Body Mass Index</string>
+    <string name="bmi_no_data">Add height &amp; weight in Edit Profile</string>
+    <string name="unit_bmi">kg/m²</string>
+    <string name="label_height_short">Height</string>
+    <string name="label_weight_short">Weight</string>
+    <string name="label_ideal_weight">Ideal weight</string>
+
+    <!-- Workout Streak -->
+    <string name="title_workout_streak">Workout Streak</string>
+    <string name="label_less">Less</string>
+    <string name="label_more">More</string>
+    <string name="streak_days">%1$d days</string>
+
+    <!-- Featured Workout -->
+    <string name="title_daily_workout">Daily Workout</string>
+    <string name="subtitle_daily_workout">Full Body • 45 min</string>
+
+    <!-- Greeting -->
+    <string name="content_desc_notification">Notifications</string>
+    <string name="greeting_subtitle">Ready to crush your workout?</string>
+
+    <!-- Search -->
+    <string name="placeholder_search_all">Search all exercises…</string>
+    <string name="placeholder_search_category">Search in %1$s…</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_explorer">Explorer</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_start">Start</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_account">Account</string>
+
+    <!-- Greeting -->
+    <string name="greeting_with_name">Good morning, %1$s 💪</string>
+
+    <!-- Schedule active/inactive -->
+    <string name="label_active">Active</string>
+    <string name="label_inactive">Inactive</string>
+    <string name="hint_swipe_delete">→ Swipe right: delete</string>
+    <string name="hint_swipe_active">← Swipe left: toggle active</string>
+
+    <!-- Featured Workout -->
+    <string name="featured_no_schedule">No active schedule</string>
+    <string name="featured_rest_day">Rest day — no exercises today</string>
+    <string name="featured_exercises_today">You have %1$d exercises to train</string>
+    <string name="btn_start_workout">Start</string>
+
+    <!-- Schedule Page -->
+    <string name="empty_schedules">No workout plans yet</string>
+    <string name="empty_schedules_hint">Tap + to create your first plan</string>
+    <string name="dialog_create_schedule_title">Create new workout plan</string>
+    <string name="placeholder_schedule_name">E.g: PPL, Upper Lower…</string>
+    <string name="schedule_days_count">%1$d workout days</string>
+    <string name="schedule_created_date">Created: %1$s</string>
+
+    <!-- Schedule Detail -->
+    <string name="calendar_month_year">Month %1$d Year %2$d</string>
+    <string name="empty_workout_day">No exercises for this day</string>
+    <string name="empty_workout_day_hint">Tap + to add exercises</string>
+    <string name="title_pick_exercises">Pick exercises</string>
+    <string name="placeholder_search_exercise">Search exercise…</string>
+    <string name="btn_add_count">Add (%1$d)</string>
+    <string name="btn_paste">Paste</string>
+    <string name="btn_copy">Copy</string>
+    <string name="btn_add_exercise">Add exercise</string>
+
+    <!-- Exercise -->
+    <string name="label_muscle_groups">Muscle Groups</string>
+    <string name="label_equipment">Equipment</string>
+    <string name="label_instructions">Instructions</string>
+    <string name="label_animation">Animation</string>
+    <string name="error_exercise_not_found">Exercise not found</string>
+    <string name="error_no_exercises">No exercises found</string>
+
+    <!-- AI Coach -->
+    <string name="title_ai_coach">AI Coach</string>
+    <string name="subtitle_ai_coach">Fitness &amp; Nutrition Assistant</string>
+    <string name="placeholder_ai_chat">Ask AI Coach…</string>
+    <string name="ai_welcome_message">Hello! I\'m your AI Coach 💪\nFeel free to ask me anything about training, nutrition, or workout plans!</string>
+    <string name="ai_error_message">An error occurred, please try again.</string>
+
+    <!-- Start / Workout Log -->
+    <string name="label_today">Today</string>
+    <string name="empty_today_workout">No workout scheduled today</string>
+    <string name="empty_today_workout_hint">Add workout days to your schedule</string>
+    <string name="label_sets_count">%1$d sets</string>
+    <string name="label_last_set">Last: %1$.1fkg × %2$d reps</string>
+    <string name="label_no_sets_logged">Tap to log sets</string>
+    <string name="label_weight_kgs">WEIGHT (kgs)</string>
+    <string name="label_reps">REPS</string>
+    <string name="btn_clear">CLEAR</string>
+    <string name="label_set_row">%1$.1f kgs × %2$d reps</string>
+
+    <!-- Calendar day headers -->
+    <string-array name="calendar_day_headers">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
+    </string-array>
 </resources>

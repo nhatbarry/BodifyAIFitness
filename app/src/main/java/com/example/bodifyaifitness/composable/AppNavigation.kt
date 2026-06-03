@@ -13,6 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.bodifyaifitness.pages.EditProfilePage
 import com.example.bodifyaifitness.pages.ExerciseDetailPage
 import com.example.bodifyaifitness.pages.LoginPage
+import com.example.bodifyaifitness.pages.ScheduleDetailPage
+import com.example.bodifyaifitness.pages.SetupProfilePage
 import com.example.bodifyaifitness.pages.SignUpPage
 import com.example.bodifyaifitness.ui.theme.GymSurfaceBg
 import com.example.bodifyaifitness.viewmodel.AuthState
@@ -51,12 +53,19 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("edit_profile") {
             EditProfilePage(modifier = modifier, navController = rootNavController)
         }
+        composable("setup_profile") {
+            SetupProfilePage(navController = rootNavController)
+        }
         composable("exercise_detail/{exerciseId}") { backStackEntry ->
             val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: ""
             ExerciseDetailPage(
                 exerciseId = exerciseId,
                 navController = rootNavController
             )
+        }
+        composable("schedule_detail/{scheduleId}") { backStackEntry ->
+            val scheduleId = backStackEntry.arguments?.getString("scheduleId") ?: ""
+            ScheduleDetailPage(scheduleId = scheduleId, navController = rootNavController)
         }
     }
 }

@@ -2,9 +2,12 @@ package com.example.bodifyaifitness.database
 
 import android.util.Log
 import com.example.bodifyaifitness.dataclass.Exercise
+import com.example.bodifyaifitness.dataclass.Schedule
 import com.example.bodifyaifitness.dataclass.User
 import com.example.bodifyaifitness.dataclass.WorkOutLog
+import com.example.bodifyaifitness.dataclass.WorkoutDay
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 
@@ -104,6 +107,100 @@ class FirebaseManager {
                 Log.e(TAG, "Lỗi lưu nhật ký buổi tập", e)
                 onFailure(e)
             }
+    }
+
+    // ── Schedule ──────────────────────────────────────────────────────────────
+
+    fun saveSchedule(userId: String, schedule: Schedule, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+        val docId = schedule.id.ifEmpty { db.collection("users").document().id }
+        val final = schedule.copy(id = docId, userId = userId)
+        db.collection("users").document(userId)
+            .collection("schedules").document(docId)
+            .set(final)
+            .addOnSuccessListener { onSuccess(docId) }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lưu schedule", e); onFailure(e) }
+    }
+
+    fun getSchedules(userId: String, onSuccess: (List<Schedule>) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("schedules")
+            .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { result ->
+                val list = result.mapNotNull { it.toObject<Schedule>() }
+                onSuccess(list)
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy schedules", e); onFailure(e) }
+    }
+
+    fun deleteSchedule(userId: String, scheduleId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("schedules").document(scheduleId)
+            .delete()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi xóa schedule", e); onFailure(e) }
+    }
+
+    fun getScheduleById(userId: String, scheduleId: String, onSuccess: (Schedule?) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("schedules").document(scheduleId)
+            .get()
+            .addOnSuccessListener { doc ->
+                onSuccess(if (doc != null && doc.exists()) doc.toObject<Schedule>() else null)
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy schedule", e); onFailure(e) }
+    }
+
+    fun updateScheduleDays(userId: String, scheduleId: String, days: List<WorkoutDay>, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("schedules").document(scheduleId)
+            .update("days", days)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi cập nhật ngày tập", e); onFailure(e) }
+    }
+
+    fun setActiveSchedule(userId: String, activeScheduleId: String?, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val colRef = db.collection("users").document(userId).collection("schedules")
+        colRef.get()
+            .addOnSuccessListener { docs ->
+                val batch = db.batch()
+                docs.forEach { doc ->
+                    batch.update(doc.reference, "isActive", doc.id == activeScheduleId)
+                }
+                batch.commit()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { e -> Log.e(TAG, "Lỗi set active schedule", e); onFailure(e) }
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy schedules để set active", e); onFailure(e) }
+    }
+
+    fun getExercisesByIds(ids: List<String>, onSuccess: (List<Exercise>) -> Unit, onFailure: (Exception) -> Unit) {
+        if (ids.isEmpty()) { onSuccess(emptyList()); return }
+        db.collection("exercises_library")
+            .whereIn(FieldPath.documentId(), ids.take(30))
+            .get()
+            .addOnSuccessListener { result ->
+                onSuccess(result.mapNotNull { it.toObject<Exercise>()?.copy(id = it.id) })
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy exercises theo IDs", e); onFailure(e) }
+    }
+
+    fun getWorkoutLogByDate(userId: String, dateKey: String, onSuccess: (WorkOutLog?) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("workout_logs").document(dateKey)
+            .get()
+            .addOnSuccessListener { doc ->
+                onSuccess(if (doc.exists()) doc.toObject<WorkOutLog>() else null)
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy workout log", e); onFailure(e) }
+    }
+
+    fun upsertWorkoutLog(userId: String, dateKey: String, log: WorkOutLog, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("users").document(userId)
+            .collection("workout_logs").document(dateKey)
+            .set(log)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lưu workout log", e); onFailure(e) }
     }
 
     fun getWorkoutHistory(userId: String, onSuccess: (List<WorkOutLog>) -> Unit, onFailure: (Exception) -> Unit) {

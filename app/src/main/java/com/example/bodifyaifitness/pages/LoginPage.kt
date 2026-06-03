@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,6 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.bodifyaifitness.R
+import com.example.bodifyaifitness.ui.theme.GymOrange
+import com.example.bodifyaifitness.ui.theme.GymSurfaceBg
+import com.example.bodifyaifitness.ui.theme.TextMuted
+import com.example.bodifyaifitness.ui.theme.TextWhite
 import com.example.bodifyaifitness.viewmodel.AuthState
 import com.example.bodifyaifitness.viewmodel.AuthViewModel
 
@@ -44,13 +49,9 @@ fun LoginPage(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val primaryOrange = Color(0xFFFF5722)
-    val surfaceDark = Color(0xFF1E1E1E)
-    val textGray = Color(0xFFAAAAAA)
-
     val authState = authViewModel.authState.observeAsState()
-
     val context = LocalContext.current
+    val loginSuccess = stringResource(R.string.toast_login_success)
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -59,7 +60,7 @@ fun LoginPage(
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             }
             is AuthState.Authenticated -> {
-                Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, loginSuccess, Toast.LENGTH_SHORT).show()
                 navController.navigate("main_app")
             }
             else -> {}
@@ -67,20 +68,17 @@ fun LoginPage(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-
         Image(
             painter = painterResource(id = R.drawable.bg),
-            contentDescription = "Background Image",
+            contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(GymSurfaceBg.copy(alpha = 0.82f))
         )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,37 +87,38 @@ fun LoginPage(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "START TO BODIFY",
-                color = primaryOrange,
-                fontSize = 42.sp,
+                text = "BODIFY",
+                color = GymOrange,
+                fontSize = 48.sp,
                 fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 2.sp
+                letterSpacing = 4.sp
             )
             Text(
-                text = "Login to continue",
-                color = textGray,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(top = 8.dp, bottom = 48.dp)
+                text = stringResource(R.string.app_tagline),
+                color = TextMuted,
+                fontSize = 14.sp,
+                letterSpacing = 1.sp,
+                modifier = Modifier.padding(top = 6.dp, bottom = 48.dp)
             )
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email", color = textGray) },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = primaryOrange) },
+                label = { Text(stringResource(R.string.label_email), color = TextMuted) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = GymOrange) },
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = primaryOrange,
-                    unfocusedIndicatorColor = textGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedContainerColor = surfaceDark,
-                    unfocusedContainerColor = surfaceDark,
-                    cursorColor = primaryOrange,
-                    focusedLabelColor = primaryOrange,
-                    unfocusedLabelColor = textGray
+                    focusedIndicatorColor = GymOrange,
+                    unfocusedIndicatorColor = Color(0xFF2A2A3E),
+                    focusedTextColor = TextWhite,
+                    unfocusedTextColor = TextWhite,
+                    focusedContainerColor = Color(0xFF12121F),
+                    unfocusedContainerColor = Color(0xFF12121F),
+                    cursorColor = GymOrange,
+                    focusedLabelColor = GymOrange,
+                    unfocusedLabelColor = TextMuted
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -128,57 +127,59 @@ fun LoginPage(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Mật khẩu", color = textGray) },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon", tint = primaryOrange) },
+                label = { Text(stringResource(R.string.label_password), color = TextMuted) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = GymOrange) },
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = "Toggle Password", tint = textGray)
+                        Icon(imageVector = icon, contentDescription = null, tint = TextMuted)
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = primaryOrange,
-                    unfocusedIndicatorColor = textGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedContainerColor = surfaceDark,
-                    unfocusedContainerColor = surfaceDark,
-                    cursorColor = primaryOrange,
-                    focusedLabelColor = primaryOrange,
-                    unfocusedLabelColor = textGray
+                    focusedIndicatorColor = GymOrange,
+                    unfocusedIndicatorColor = Color(0xFF2A2A3E),
+                    focusedTextColor = TextWhite,
+                    unfocusedTextColor = TextWhite,
+                    focusedContainerColor = Color(0xFF12121F),
+                    unfocusedContainerColor = Color(0xFF12121F),
+                    cursorColor = GymOrange,
+                    focusedLabelColor = GymOrange,
+                    unfocusedLabelColor = TextMuted
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Quên mật khẩu?",
-                color = primaryOrange,
+                text = stringResource(R.string.forgot_password),
+                color = GymOrange,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { /* Xử lý quên mật khẩu sau */ }
+                    .clickable { }
                     .padding(4.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = {
-                    authViewModel.login(email, password)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = primaryOrange),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
+                onClick = { authViewModel.login(email, password) },
+                colors = ButtonDefaults.buttonColors(containerColor = GymOrange),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
-                Text(text = "ĐĂNG NHẬP", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(
+                    text = stringResource(R.string.btn_login),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    letterSpacing = 1.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -188,18 +189,14 @@ fun LoginPage(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Chưa có tài khoản? ", color = textGray, fontSize = 15.sp)
+                Text(text = stringResource(R.string.no_account), color = TextMuted, fontSize = 15.sp)
                 Text(
-                    text = "Đăng ký ngay",
+                    text = stringResource(R.string.sign_up_link),
                     textDecoration = TextDecoration.Underline,
-                    color = primaryOrange,
+                    color = GymOrange,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate("sign_up_page")
-                        }
-                        .padding(4.dp)
+                    modifier = Modifier.clickable { navController.navigate("sign_up_page") }.padding(4.dp)
                 )
             }
         }

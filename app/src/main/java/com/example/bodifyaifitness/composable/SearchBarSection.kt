@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.res.stringResource
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.dataclass.Exercise
 import com.example.bodifyaifitness.ui.theme.ChipInactive
 import com.example.bodifyaifitness.ui.theme.GymOrange
@@ -78,8 +80,8 @@ fun SearchBarSection(
             onValueChange = onQueryChange,
             placeholder = {
                 Text(
-                    text = if (selectedCategory == "All") "Search all exercises..."
-                           else "Search in $selectedCategory...",
+                    text = if (selectedCategory == "All") stringResource(R.string.placeholder_search_all)
+                           else stringResource(R.string.placeholder_search_category, selectedCategory),
                     color = TextMuted,
                     fontSize = 14.sp
                 )
@@ -87,7 +89,7 @@ fun SearchBarSection(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
+                    contentDescription = null,
                     tint = if (query.isNotBlank()) GymOrange else TextMuted,
                     modifier = Modifier.size(20.dp)
                 )
@@ -95,12 +97,7 @@ fun SearchBarSection(
             trailingIcon = {
                 if (query.isNotBlank()) {
                     IconButton(onClick = { onQueryChange("") }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Clear",
-                            tint = TextMuted,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(imageVector = Icons.Default.Close, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
                     }
                 }
             },

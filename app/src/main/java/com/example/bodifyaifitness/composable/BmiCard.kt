@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.ui.theme.GymOrange
 import com.example.bodifyaifitness.ui.theme.TextMuted
 import com.example.bodifyaifitness.ui.theme.TextWhite
@@ -41,16 +43,16 @@ import com.example.bodifyaifitness.ui.theme.TextWhite
 // ── BMI category helpers ──────────────────────────────────────────────────────
 
 data class BmiCategory(
-    val label: String,
+    val labelRes: Int,
     val color: Color,
     val range: ClosedFloatingPointRange<Float>
 )
 
 private val bmiCategories = listOf(
-    BmiCategory("Underweight", Color(0xFF5DADE2), 0f..18.5f),
-    BmiCategory("Normal",      Color(0xFF2ECC71), 18.5f..24.9f),
-    BmiCategory("Overweight",  Color(0xFFF39C12), 24.9f..29.9f),
-    BmiCategory("Obese",       Color(0xFFE74C3C), 29.9f..60f)
+    BmiCategory(R.string.bmi_underweight, Color(0xFF5DADE2), 0f..18.5f),
+    BmiCategory(R.string.bmi_normal,      Color(0xFF2ECC71), 18.5f..24.9f),
+    BmiCategory(R.string.bmi_overweight,  Color(0xFFF39C12), 24.9f..29.9f),
+    BmiCategory(R.string.bmi_obese,       Color(0xFFE74C3C), 29.9f..60f)
 )
 
 private fun getBmiCategory(bmi: Float): BmiCategory =
@@ -117,7 +119,7 @@ fun BmiCard(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Body Mass Index",
+                    text = stringResource(R.string.title_bmi),
                     style = MaterialTheme.typography.titleLarge,
                     color = TextWhite
                 )
@@ -131,7 +133,7 @@ fun BmiCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = category.label,
+                        text = stringResource(category.labelRes),
                         color = category.color,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp
@@ -156,7 +158,7 @@ fun BmiCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Add height & weight in Edit Profile",
+                    text = stringResource(R.string.bmi_no_data),
                     color = TextMuted,
                     fontSize = 13.sp
                 )
@@ -175,7 +177,7 @@ fun BmiCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "kg/m²",
+                    text = stringResource(R.string.unit_bmi),
                     color = TextMuted,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -206,12 +208,9 @@ fun BmiCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                MetricChip(label = "Height", value = "${heightCm.toInt()} cm")
-                MetricChip(label = "Weight", value = "${weightKg.toInt()} kg")
-                MetricChip(
-                    label = "Ideal weight",
-                    value = idealWeightRange(heightCm)
-                )
+                MetricChip(label = stringResource(R.string.label_height_short), value = "${heightCm.toInt()} cm")
+                MetricChip(label = stringResource(R.string.label_weight_short), value = "${weightKg.toInt()} kg")
+                MetricChip(label = stringResource(R.string.label_ideal_weight), value = idealWeightRange(heightCm))
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.bodifyaifitness.pages
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -29,18 +31,23 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.getValue
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.composable.BmiCard
 import com.example.bodifyaifitness.composable.WorkoutStreakChart
 import com.example.bodifyaifitness.dataclass.User
@@ -64,202 +71,126 @@ fun AccountPage(
     val authState = authViewModel.authState.observeAsState()
     val userState = userViewModel.userState.observeAsState()
 
-    // Load user profile when entering page
     LaunchedEffect(Unit) { userViewModel.loadUserProfile() }
 
-    // Derive display values from state
     val user: User? = (userState.value as? UserProfileState.Success)?.user
-    val displayName = user?.name?.ifBlank { null } ?: "Athlete"
+    val displayName  = user?.name?.ifBlank { null } ?: stringResource(R.string.default_athlete)
     val displayEmail = user?.email?.ifBlank { null } ?: "—"
     val bmi = user?.let { userViewModel.calculateBmi(it) }
 
-    // Navigate to login if signed out
+    // Current locale for toggle label
+    val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags().take(2)
+    val isVi = currentLocale.startsWith("vi")
+
     LaunchedEffect(authState.value) {
         if (authState.value is AuthState.Unauthenticated) {
-            navController.navigate("login_page") {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate("login_page") { popUpTo(0) { inclusive = true } }
         }
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(GymSurfaceBg)
-            .verticalScroll(rememberScrollState())
+        modifier = modifier.fillMaxSize().background(GymSurfaceBg).verticalScroll(rememberScrollState())
     ) {
         // ── Profile Header ──────────────────────────────────────────────────
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color(0xFF1A1A2E), GymSurfaceBg)
-                    )
-                )
+            modifier = Modifier.fillMaxWidth()
+                .background(Brush.verticalGradient(colors = listOf(Color(0xFF1A1A2E), GymSurfaceBg)))
                 .padding(top = 32.dp, bottom = 24.dp)
         ) {
-            // Avatar circle
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape)
-                    .background(ChipInactive)
-                    .border(
-                        width = 3.dp,
-                        brush = Brush.sweepGradient(
-                            listOf(GymOrange, Color(0xFFFF4757), GymOrange)
-                        ),
-                        shape = CircleShape
-                    )
+                modifier = Modifier.size(96.dp).clip(CircleShape).background(ChipInactive)
+                    .border(width = 3.dp, brush = Brush.sweepGradient(listOf(GymOrange, Color(0xFFFF4757), GymOrange)), shape = CircleShape)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Avatar",
-                    tint = TextMuted,
-                    modifier = Modifier.size(56.dp)
-                )
+                val avatarUrl = user?.avatarUri
+                if (!avatarUrl.isNullOrEmpty()) {
+                    AsyncImage(model = avatarUrl, contentDescription = "Avatar", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                } else {
+                    Icon(Icons.Default.Person, contentDescription = "Avatar", tint = TextMuted, modifier = Modifier.size(56.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
-
-            // User name
-            Text(
-                text = displayName,
-                style = MaterialTheme.typography.headlineMedium,
-                color = TextWhite,
-                fontWeight = FontWeight.Bold
-            )
-
+            Text(text = displayName, style = MaterialTheme.typography.headlineMedium, color = TextWhite, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = displayEmail,
-                fontSize = 13.sp,
-                color = TextMuted
-            )
-
+            Text(text = displayEmail, fontSize = 13.sp, color = TextMuted)
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Stats row ────────────────────────────────────────────────────
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                StatItem(label = "Workouts", value = "0")
+            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+                StatItem(label = stringResource(R.string.label_workouts), value = "0")
                 StatDivider()
-                StatItem(label = "Streak", value = "0 days")
+                StatItem(label = stringResource(R.string.label_streak), value = "0 days")
                 StatDivider()
-                StatItem(label = "Volume", value = "0 kg")
+                StatItem(label = stringResource(R.string.label_volume), value = "0 kg")
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Action buttons ───────────────────────────────────────────────
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Edit profile button
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = { navController.navigate("edit_profile") },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ChipInactive,
-                        contentColor = TextWhite
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.height(44.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = ChipInactive, contentColor = TextWhite),
+                    shape = RoundedCornerShape(12.dp), modifier = Modifier.height(44.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Edit Profile",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    )
+                    Text(stringResource(R.string.btn_edit_profile), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Logout button
+                // Language toggle button
+                OutlinedButton(
+                    onClick = {
+                        val newLocale = if (isVi) "en" else "vi"
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(newLocale))
+                    },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = GymOrange),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, GymOrange),
+                    shape = RoundedCornerShape(12.dp), modifier = Modifier.height(44.dp)
+                ) {
+                    Icon(Icons.Default.Language, null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(if (isVi) "EN" else "VI", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
                 OutlinedButton(
                     onClick = { authViewModel.signOut() },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFFF4757)
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp, Color(0xFFFF4757)
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.height(44.dp)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF4757)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFF4757)),
+                    shape = RoundedCornerShape(12.dp), modifier = Modifier.height(44.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Logout,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Logout, null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Sign Out",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    )
+                    Text(stringResource(R.string.btn_sign_out), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                 }
             }
         }
 
-        // ── BMI Card ────────────────────────────────────────────────────────
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            BmiCard(
-                bmi = bmi,
-                heightCm = user?.height ?: 0f,
-                weightKg = user?.weight ?: 0f
-            )
+            BmiCard(bmi = bmi, heightCm = user?.height ?: 0f, weightKg = user?.weight ?: 0f)
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        // ── Streak Chart ────────────────────────────────────────────────────
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             WorkoutStreakChart()
         }
-
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
-// ── Small helpers ─────────────────────────────────────────────────────────────
-
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            color = TextWhite,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
-        )
+        Text(text = value, color = TextWhite, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = label,
-            color = TextMuted,
-            fontSize = 12.sp
-        )
+        Text(text = label, color = TextMuted, fontSize = 12.sp)
     }
 }
 
 @Composable
 private fun StatDivider() {
-    Box(
-        modifier = Modifier
-            .height(36.dp)
-            .width(1.dp)
-            .background(Color(0xFF2A2A3E))
-    )
+    Box(modifier = Modifier.height(36.dp).width(1.dp).background(Color(0xFF2A2A3E)))
 }

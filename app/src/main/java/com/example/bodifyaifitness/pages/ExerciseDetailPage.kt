@@ -53,6 +53,8 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import androidx.compose.ui.res.stringResource
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.dataclass.Exercise
 import com.example.bodifyaifitness.ui.theme.ChipInactive
 import com.example.bodifyaifitness.ui.theme.GymOrange
@@ -97,7 +99,7 @@ fun ExerciseDetailPage(
 
             is ExerciseDetailState.NotFound -> {
                 Text(
-                    text = "Không tìm thấy bài tập",
+                    text = stringResource(R.string.error_exercise_not_found),
                     color = TextMuted,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -221,7 +223,7 @@ private fun ExerciseDetailContent(exercise: Exercise) {
             if (exercise.muscleGroup.isNotEmpty()) {
                 SectionHeader(
                     icon = Icons.Default.LocalFireDepartment,
-                    title = "Muscle Groups"
+                    title = stringResource(R.string.label_muscle_groups)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 FlowRow(
@@ -239,7 +241,7 @@ private fun ExerciseDetailContent(exercise: Exercise) {
             if (exercise.equipment.isNotEmpty()) {
                 SectionHeader(
                     icon = Icons.Default.FitnessCenter,
-                    title = "Equipment"
+                    title = stringResource(R.string.label_equipment)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 FlowRow(
@@ -257,7 +259,7 @@ private fun ExerciseDetailContent(exercise: Exercise) {
             if (exercise.instructionsStep.isNotEmpty()) {
                 SectionHeader(
                     icon = Icons.Default.FitnessCenter,
-                    title = "Instructions"
+                    title = stringResource(R.string.label_instructions)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 exercise.instructionsStep.forEachIndexed { index, step ->
@@ -302,7 +304,7 @@ private fun ExerciseDetailContent(exercise: Exercise) {
 
                 SectionHeader(
                     icon = Icons.Default.FitnessCenter,
-                    title = "Instructions"
+                    title = stringResource(R.string.label_instructions)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 steps.forEachIndexed { index, step ->
@@ -344,7 +346,7 @@ private fun ExerciseDetailContent(exercise: Exercise) {
             // ── GIF bài tập ──────────────────────────────────────────────
             if (exercise.gif.isNotEmpty()) {
                 Text(
-                    text = "Animation",
+                    text = stringResource(R.string.label_animation),
                     color = TextWhite,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp

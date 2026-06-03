@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringArrayResource
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.ui.theme.ChipActive
 import com.example.bodifyaifitness.ui.theme.ChipInactive
 import com.example.bodifyaifitness.ui.theme.TextMuted
