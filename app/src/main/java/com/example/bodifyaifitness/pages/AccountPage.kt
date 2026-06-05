@@ -1,5 +1,6 @@
 package com.example.bodifyaifitness.pages
 
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,14 +32,17 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,6 +64,8 @@ import com.example.bodifyaifitness.viewmodel.AuthState
 import com.example.bodifyaifitness.viewmodel.AuthViewModel
 import com.example.bodifyaifitness.viewmodel.UserProfileState
 import com.example.bodifyaifitness.viewmodel.UserViewModel
+import com.example.bodifyaifitness.viewmodel.WorkoutLogViewModel
+import java.time.LocalDate
 
 @Composable
 fun AccountPage(
@@ -88,10 +94,37 @@ fun AccountPage(
         }
     }
 
+    // ── Workout stats (Activity-scoped ViewModel) ─────────────────────────────
+    val activity = LocalContext.current as ComponentActivity
+    val workoutLogViewModel: WorkoutLogViewModel = viewModel(activity)
+    val allLogsMap by workoutLogViewModel.allLogsMap.collectAsState()
+
+    LaunchedEffect(Unit) { workoutLogViewModel.loadAllLogs() }
+
+    // Computed stats
+    val totalSessions  = allLogsMap.size
+    val totalExercises = allLogsMap.values.sumOf { it.exercise.size }
+    val totalVolumeKg  = allLogsMap.values.sumOf { log ->
+        log.exercise.sumOf { ex -> ex.sets.sumOf { it.weight * it.reps } }
+    }
+
+    // Build activityData: LocalDate → exercise count (for chart)
+    val activityData = remember(allLogsMap) {
+        allLogsMap.entries.associate { (dateKey, log) ->
+            LocalDate.parse(dateKey) to log.exercise.size
+        }
+    }
+
+    // ── Format helpers ────────────────────────────────────────────────────────
+    fun formatVolume(kg: Double): String = when {
+        kg >= 1_000.0 -> "${"%.1f".format(kg / 1000)}k kg"
+        else          -> "${kg.toInt()} kg"
+    }
+
     Column(
         modifier = modifier.fillMaxSize().background(GymSurfaceBg).verticalScroll(rememberScrollState())
     ) {
-        // ── Profile Header ──────────────────────────────────────────────────
+        // ── Profile Header ────────────────────────────────────────────────────
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -101,11 +134,20 @@ fun AccountPage(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(96.dp).clip(CircleShape).background(ChipInactive)
-                    .border(width = 3.dp, brush = Brush.sweepGradient(listOf(GymOrange, Color(0xFFFF4757), GymOrange)), shape = CircleShape)
+                    .border(
+                        width = 3.dp,
+                        brush = Brush.sweepGradient(listOf(GymOrange, Color(0xFFFF4757), GymOrange)),
+                        shape = CircleShape
+                    )
             ) {
                 val avatarUrl = user?.avatarUri
                 if (!avatarUrl.isNullOrEmpty()) {
-                    AsyncImage(model = avatarUrl, contentDescription = "Avatar", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = "Avatar",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 } else {
                     Icon(Icons.Default.Person, contentDescription = "Avatar", tint = TextMuted, modifier = Modifier.size(56.dp))
                 }
@@ -117,12 +159,22 @@ fun AccountPage(
             Text(text = displayEmail, fontSize = 13.sp, color = TextMuted)
             Spacer(modifier = Modifier.height(20.dp))
 
+            // ── Stats row ─────────────────────────────────────────────────────
             Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
-                StatItem(label = stringResource(R.string.label_workouts), value = "0")
+                StatItem(
+                    label = stringResource(R.string.label_workouts), // "Exercises"
+                    value = "$totalExercises"
+                )
                 StatDivider()
-                StatItem(label = stringResource(R.string.label_streak), value = "0 days")
+                StatItem(
+                    label = stringResource(R.string.label_streak),   // "Sessions"
+                    value = "$totalSessions"
+                )
                 StatDivider()
-                StatItem(label = stringResource(R.string.label_volume), value = "0 kg")
+                StatItem(
+                    label = stringResource(R.string.label_volume),   // "Volume"
+                    value = formatVolume(totalVolumeKg)
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -170,12 +222,15 @@ fun AccountPage(
             }
         }
 
+        // ── BMI Card ──────────────────────────────────────────────────────────
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             BmiCard(bmi = bmi, heightCm = user?.height ?: 0f, weightKg = user?.weight ?: 0f)
         }
+
+        // ── Activity Chart ────────────────────────────────────────────────────
         Spacer(modifier = Modifier.height(8.dp))
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            WorkoutStreakChart()
+            WorkoutStreakChart(activityData = activityData)
         }
         Spacer(modifier = Modifier.height(24.dp))
     }

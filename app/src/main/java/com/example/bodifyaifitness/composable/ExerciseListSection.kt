@@ -114,7 +114,7 @@ private fun ExerciseItem(exercise: Exercise, onClick: () -> Unit = {}) {
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         AsyncImage(
-            model = exercise.thumbnail.ifEmpty { null },
+            model = exercise.thumbnailUrl.ifEmpty { null },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

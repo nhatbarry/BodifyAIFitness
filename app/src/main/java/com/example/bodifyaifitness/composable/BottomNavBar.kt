@@ -93,7 +93,7 @@ fun NavBar(modifier: Modifier = Modifier, rootNavController: NavController, auth
                 )
             }
             composable("schedule_page") { SchedulePage(navController = rootNavController) }
-            composable("start_page") { StartPage() }
+            composable("start_page") { StartPage(navController = rootNavController) }
             composable("ai_coach_page") {
                 AiCoachPage(outerBottomPadding = innerPadding.calculateBottomPadding())
             }

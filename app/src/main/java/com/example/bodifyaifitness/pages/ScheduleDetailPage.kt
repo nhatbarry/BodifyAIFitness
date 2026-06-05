@@ -90,6 +90,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.LocalContext
+import com.example.bodifyaifitness.dataclass.WorkOutLog
+import com.example.bodifyaifitness.viewmodel.WorkoutLogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,6 +117,16 @@ fun ScheduleDetailPage(
 
     LaunchedEffect(scheduleId) {
         scheduleViewModel.loadScheduleById(scheduleId)
+    }
+
+    // Activity-scoped → cùng instance với StartPage / ExerciseDetailPage
+    val activity    = LocalContext.current as ComponentActivity
+    val logViewModel: WorkoutLogViewModel = viewModel(activity)
+    val selectedDateLog by logViewModel.selectedDateLog.collectAsState()
+
+    val logDateFmt = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
+    LaunchedEffect(selectedDate) {
+        logViewModel.loadLogForDate(logDateFmt.format(Date(selectedDate)))
     }
 
     val markedDates = remember(schedule) {
@@ -194,6 +208,10 @@ fun ScheduleDetailPage(
                     selectedDate = selectedDate,
                     exerciseIds = selectedDayExerciseIds,
                     exerciseState = exerciseViewModel.exerciseState.collectAsState().value,
+                    dayLog = selectedDateLog,
+                    onExerciseClick = { id ->
+                        navController.navigate("exercise_detail/$id")
+                    },
                     onRemoveExercise = { exerciseId ->
                         val updated = selectedDayExerciseIds.filter { it != exerciseId }
                         scheduleViewModel.addWorkoutDay(
@@ -382,6 +400,8 @@ private fun WorkoutDaySection(
     selectedDate: Long,
     exerciseIds: List<String>,
     exerciseState: ExerciseState,
+    dayLog: WorkOutLog? = null,
+    onExerciseClick: (String) -> Unit,
     onRemoveExercise: (String) -> Unit
 ) {
     val dateLabel = remember(selectedDate) {
@@ -463,10 +483,11 @@ private fun WorkoutDaySection(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFF12121F))
+                                .clickable { onExerciseClick(exercise.id) }
                                 .padding(10.dp)
                         ) {
                             AsyncImage(
-                                model = exercise.thumbnail.ifEmpty { null },
+                                model = exercise.thumbnailUrl.ifEmpty { null },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -490,6 +511,21 @@ private fun WorkoutDaySection(
                                         fontSize = 12.sp
                                     )
                                 }
+                                // Log history cho ngày được chọn
+                                val logSets = dayLog?.exercise
+                                    ?.firstOrNull { it.exerciseId == exercise.id }
+                                    ?.sets ?: emptyList()
+                                if (logSets.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(5.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                        HistoryStatChip("${logSets.size} sets", Color(0xFF1E2E1E), Color(0xFF4CAF50))
+                                        HistoryStatChip("${logSets.sumOf { it.reps }} reps", Color(0xFF1A1A2E), Color(0xFF7986CB))
+                                        HistoryStatChip(
+                                            "${"%".plus(".0f").format(logSets.sumOf { it.weight * it.reps })}kg",
+                                            Color(0xFF2A1E10), GymOrange
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -499,7 +535,19 @@ private fun WorkoutDaySection(
     }
 }
 
-// ── Exercise Picker ───────────────────────────────────────────────────────────
+@Composable
+private fun HistoryStatChip(text: String, bgColor: Color, textColor: Color) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgColor)
+            .padding(horizontal = 7.dp, vertical = 3.dp)
+    ) {
+        Text(text = text, color = textColor, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+// ── Exercise Picker ─────────────────────────────────────────────────────────────
 
 @Composable
 private fun ExercisePickerScreen(
@@ -609,7 +657,7 @@ private fun ExercisePickerScreen(
                         .padding(10.dp)
                 ) {
                     AsyncImage(
-                        model = exercise.thumbnail.ifEmpty { null },
+                        model = exercise.thumbnailUrl.ifEmpty { null },
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

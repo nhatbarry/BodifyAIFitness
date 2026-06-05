@@ -7,9 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.bodifyaifitness.pages.EditProfilePage
 import com.example.bodifyaifitness.pages.ExerciseDetailPage
 import com.example.bodifyaifitness.pages.LoginPage
@@ -56,11 +58,21 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("setup_profile") {
             SetupProfilePage(navController = rootNavController)
         }
-        composable("exercise_detail/{exerciseId}") { backStackEntry ->
+        composable(
+            route = "exercise_detail/{exerciseId}?showLog={showLog}",
+            arguments = listOf(
+                navArgument("showLog") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
             val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: ""
+            val showLog    = backStackEntry.arguments?.getBoolean("showLog") ?: false
             ExerciseDetailPage(
                 exerciseId = exerciseId,
-                navController = rootNavController
+                navController = rootNavController,
+                showLog = showLog
             )
         }
         composable("schedule_detail/{scheduleId}") { backStackEntry ->

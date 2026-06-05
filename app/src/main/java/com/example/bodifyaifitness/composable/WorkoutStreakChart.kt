@@ -23,65 +23,55 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bodifyaifitness.ui.theme.GymOrange
-import com.example.bodifyaifitness.ui.theme.GymSurfaceBg
 import com.example.bodifyaifitness.ui.theme.TextMuted
 import com.example.bodifyaifitness.ui.theme.TextWhite
 import java.time.DayOfWeek
 import java.time.LocalDate
 
-// Intensity levels 0–4 mapped to colors
-private fun intensityColor(level: Int): Color = when (level) {
-    0 -> Color(0xFF1E1E2E)   // no workout – very dark
-    1 -> Color(0xFF7A3B1E)   // light – dim ember
-    2 -> Color(0xFFB85C2A)   // moderate
-    3 -> Color(0xFFE07030)   // good
-    4 -> GymOrange           // 🔥 max – GymOrange
-    else -> Color(0xFF1E1E2E)
+// ── Color mapping: exercise count → intensity color ───────────────────────────
+// Màu càng đậm → càng nhiều bài tập trong buổi đó
+private fun intensityColor(exerciseCount: Int): Color = when {
+    exerciseCount == 0    -> Color(0xFF1A1A2E)   // không tập – nền tối
+    exerciseCount == 1    -> Color(0xFF3D1C0A)   // 1 bài – dim ember
+    exerciseCount <= 3    -> Color(0xFF7A3B1E)   // 2-3 bài – moderate
+    exerciseCount <= 5    -> Color(0xFFB85C2A)   // 4-5 bài – good
+    exerciseCount <= 7    -> Color(0xFFE07030)   // 6-7 bài – great
+    else                  -> GymOrange           // 8+ bài – 🔥 max
 }
 
-/**
- * Data holder: one entry per day.
- * [level] 0 = rest, 1–4 = workout intensity.
- */
-data class StreakDay(val date: LocalDate, val level: Int = 0)
-
-/**
- * Generates placeholder streak data for the past [weeks] weeks.
- * Replace with real data from ViewModel later.
- */
-fun generatePlaceholderStreak(weeks: Int = 17): List<StreakDay> {
-    val today = LocalDate.now()
-    val start = today.minusWeeks(weeks.toLong()).with(DayOfWeek.MONDAY)
-    val days = mutableListOf<StreakDay>()
-    var current = start
-    while (!current.isAfter(today)) {
-        // Scatter some random-looking but deterministic levels
-        val seed = current.dayOfYear * current.year
-        val level = when {
-            seed % 7 == 0 -> 4
-            seed % 5 == 0 -> 3
-            seed % 3 == 0 -> 2
-            seed % 2 == 0 -> 1
-            else -> 0
-        }
-        days.add(StreakDay(current, level))
-        current = current.plusDays(1)
-    }
-    return days
-}
+// ── Data holder ───────────────────────────────────────────────────────────────
+data class StreakDay(val date: LocalDate, val exerciseCount: Int = 0)
 
 private val DAY_LABELS = listOf("Mon", "", "Wed", "", "Fri", "", "Sun")
 
+// ── Main composable ───────────────────────────────────────────────────────────
+
+/**
+ * Workout activity heatmap chart.
+ *
+ * @param activityData  Map of LocalDate → exercise count for that day.
+ *                      Days not present in the map are treated as 0 (rest/no log).
+ */
 @Composable
 fun WorkoutStreakChart(
-    streakDays: List<StreakDay> = generatePlaceholderStreak(),
+    activityData: Map<LocalDate, Int> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
-    // Group into weeks (columns of 7 days, Mon–Sun)
-    val weeks: List<List<StreakDay?>> = buildWeeks(streakDays)
+    val today = LocalDate.now()
+    val start = today.minusWeeks(17L).with(DayOfWeek.MONDAY)
 
-    // Month labels: collect which column each new month starts at
+    // Build streakDays for the last 17 weeks
+    val streakDays = buildList {
+        var current = start
+        while (!current.isAfter(today)) {
+            add(StreakDay(current, activityData[current] ?: 0))
+            current = current.plusDays(1)
+        }
+    }
+
+    val weeks       = buildWeeks(streakDays)
     val monthLabels = buildMonthLabels(weeks)
+    val activeDays  = streakDays.count { it.exerciseCount > 0 }
 
     Column(
         modifier = modifier
@@ -96,25 +86,38 @@ fun WorkoutStreakChart(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Workout Streak",
-                style = MaterialTheme.typography.titleLarge,
-                color = TextWhite
-            )
-            val totalActive = streakDays.count { it.level > 0 }
-            Text(
-                text = "$totalActive days",
-                fontSize = 13.sp,
-                color = GymOrange,
-                fontWeight = FontWeight.SemiBold
-            )
+            Column {
+                Text(
+                    text = "Workout Activity",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextWhite,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Last 17 weeks",
+                    fontSize = 11.sp,
+                    color = TextMuted
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(GymOrange.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "$activeDays sessions",
+                    fontSize = 12.sp,
+                    color = GymOrange,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         // ── Month labels row ─────────────────────────────────────────────────
         Row {
-            // Left offset for day-of-week labels
             Spacer(modifier = Modifier.width(24.dp))
             weeks.forEachIndexed { weekIdx, _ ->
                 val label = monthLabels[weekIdx]
@@ -143,8 +146,7 @@ fun WorkoutStreakChart(
             ) {
                 DAY_LABELS.forEach { label ->
                     Box(
-                        modifier = Modifier
-                            .size(width = 24.dp, height = 12.dp),
+                        modifier = Modifier.size(width = 24.dp, height = 12.dp),
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
@@ -159,19 +161,18 @@ fun WorkoutStreakChart(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            // Weeks
+            // Weeks (columns)
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 weeks.forEach { week ->
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        // 7 day cells per column
                         (0..6).forEach { dayIndex ->
                             val streakDay = week.getOrNull(dayIndex)
-                            val level = streakDay?.level ?: 0
+                            val count = streakDay?.exerciseCount ?: 0
                             Box(
                                 modifier = Modifier
                                     .size(12.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .background(intensityColor(level))
+                                    .background(intensityColor(count))
                             )
                         }
                     }
@@ -189,12 +190,12 @@ fun WorkoutStreakChart(
         ) {
             Text(text = "Less", fontSize = 9.sp, color = TextMuted)
             Spacer(modifier = Modifier.width(4.dp))
-            (0..4).forEach { level ->
+            listOf(0, 1, 3, 5, 8).forEach { count ->
                 Box(
                     modifier = Modifier
                         .size(10.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(intensityColor(level))
+                        .background(intensityColor(count))
                 )
                 Spacer(modifier = Modifier.width(2.dp))
             }
@@ -205,16 +206,11 @@ fun WorkoutStreakChart(
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/**
- * Groups flat StreakDay list into columns of 7 (Mon=0 … Sun=6).
- * Pads the first week with nulls if it doesn't start on Monday.
- */
 private fun buildWeeks(days: List<StreakDay>): List<List<StreakDay?>> {
     if (days.isEmpty()) return emptyList()
     val weeks = mutableListOf<List<StreakDay?>>()
     var current = mutableListOf<StreakDay?>()
 
-    // Pad first week
     val firstDow = days.first().date.dayOfWeek.value - 1 // Mon=0
     repeat(firstDow) { current.add(null) }
 
@@ -232,9 +228,6 @@ private fun buildWeeks(days: List<StreakDay>): List<List<StreakDay?>> {
     return weeks
 }
 
-/**
- * Returns a map of weekIndex → month abbreviation, only where a new month starts.
- */
 private fun buildMonthLabels(weeks: List<List<StreakDay?>>): Map<Int, String?> {
     val map = mutableMapOf<Int, String?>()
     val monthNames = listOf("Jan","Feb","Mar","Apr","May","Jun",

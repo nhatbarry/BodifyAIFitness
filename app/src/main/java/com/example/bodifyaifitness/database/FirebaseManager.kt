@@ -203,6 +203,27 @@ class FirebaseManager {
             .addOnFailureListener { e -> Log.e(TAG, "Lỗi lưu workout log", e); onFailure(e) }
     }
 
+    fun getAllWorkoutLogs(
+        userId: String,
+        onSuccess: (Map<String, WorkOutLog>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("users").document(userId)
+            .collection("workout_logs")
+            .get()
+            .addOnSuccessListener { result ->
+                val map = result.mapNotNull { doc ->
+                    val log = doc.toObject<WorkOutLog>()
+                    if (log != null) doc.id to log else null
+                }.toMap()
+                onSuccess(map)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Lỗi lấy tất cả workout logs", e)
+                onFailure(e)
+            }
+    }
+
     fun getWorkoutHistory(userId: String, onSuccess: (List<WorkOutLog>) -> Unit, onFailure: (Exception) -> Unit) {
         db.collection("users")
             .document(userId)

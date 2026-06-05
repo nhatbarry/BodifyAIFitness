@@ -58,10 +58,6 @@ object CloudinaryUploader {
         }
     }
 
-    /**
-     * Resize ảnh về tối đa 512x512 và compress JPEG 80%.
-     * Giảm kích thước upload và tiết kiệm bandwidth Cloudinary.
-     */
     private fun compressImage(context: Context, uri: Uri): ByteArray? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null

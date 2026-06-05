@@ -49,8 +49,8 @@
 
     <!-- Account -->
     <string name="default_athlete">Athlete</string>
-    <string name="label_workouts">Workouts</string>
-    <string name="label_streak">Streak</string>
+    <string name="label_workouts">Exercises</string>
+    <string name="label_streak">Sessions</string>
     <string name="label_volume">Volume</string>
     <string name="btn_edit_profile">Edit Profile</string>
     <string name="btn_sign_out">Sign Out</string>
@@ -158,7 +158,10 @@
     <string name="label_weight_kgs">WEIGHT (kgs)</string>
     <string name="label_reps">REPS</string>
     <string name="btn_clear">CLEAR</string>
+    <string name="btn_update">UPDATE</string>
     <string name="label_set_row">%1$.1f kgs × %2$d reps</string>
+    <string name="label_today_log">Today\'s Log</string>
+    <string name="label_workout_stats">%1$d sets · %2$d reps · %3$.0fkg vol</string>
 
     <!-- Calendar day headers -->
     <string-array name="calendar_day_headers">

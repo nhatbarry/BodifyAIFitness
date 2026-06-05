@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -85,7 +86,7 @@ fun EditProfilePage(
     val currentUser = (userState.value as? UserProfileState.Success)?.user
 
     var name     by remember { mutableStateOf("") }
-    var email    by remember { mutableStateOf("") }
+    var email    by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.email ?: "") }
     var heightCm by remember { mutableStateOf("") }
     var weightKg by remember { mutableStateOf("") }
     var avatarUri by remember { mutableStateOf("") }
@@ -144,7 +145,8 @@ fun EditProfilePage(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
                 .background(Brush.verticalGradient(listOf(Color(0xFF1A1A2E), GymSurfaceBg)))
-                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .statusBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 12.dp)
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBackIosNew, stringResource(R.string.content_desc_back), tint = TextWhite)
