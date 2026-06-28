@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.bodifyaifitness.pages.EditProfilePage
 import com.example.bodifyaifitness.pages.ExerciseDetailPage
+import com.example.bodifyaifitness.pages.ForgotPasswordPage
 import com.example.bodifyaifitness.pages.LoginPage
 import com.example.bodifyaifitness.pages.ScheduleDetailPage
 import com.example.bodifyaifitness.pages.SetupProfilePage
@@ -48,6 +49,9 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("sign_up_page") {
             SignUpPage(modifier, rootNavController, authViewModel)
+        }
+        composable("forgot_password_page") {
+            ForgotPasswordPage(modifier, rootNavController, authViewModel)
         }
         composable("main_app") {
             NavBar(modifier, rootNavController, authViewModel)

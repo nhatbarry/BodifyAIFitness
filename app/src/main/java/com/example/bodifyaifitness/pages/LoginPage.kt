@@ -161,7 +161,9 @@ fun LoginPage(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { }
+                    .clickable {
+                        navController.navigate("forgot_password_page")
+                    }
                     .padding(4.dp)
             )
 

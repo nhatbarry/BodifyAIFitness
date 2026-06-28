@@ -42,6 +42,26 @@ class AuthViewModel : ViewModel(){
             }
     }
 
+    fun resetPassword(email: String, onResult: (Boolean, String) -> Unit) {
+        if (email.isEmpty()) {
+            onResult(false, "Vui lòng nhập email")
+            return
+        }
+
+        _authState.value = AuthState.Loading
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _authState.value = AuthState.Unauthenticated // Reset về trạng thái chờ
+                    onResult(true, "Link đặt lại mật khẩu đã được gửi vào Email của bạn!")
+                } else {
+                    val errorMsg = task.exception?.message ?: "Gửi email thất bại"
+                    _authState.value = AuthState.Error(errorMsg)
+                    onResult(false, errorMsg)
+                }
+            }
+    }
+
     fun signUp(email:String, password:String){
 
         if(email.isEmpty() || password.isEmpty()){
