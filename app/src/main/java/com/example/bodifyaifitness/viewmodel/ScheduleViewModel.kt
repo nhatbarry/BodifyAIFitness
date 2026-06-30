@@ -91,7 +91,9 @@ class ScheduleViewModel : ViewModel() {
     fun addWorkoutDay(scheduleId: String, newDay: WorkoutDay) {
         val uid = auth.currentUser?.uid ?: return
         val current = _selectedSchedule.value ?: return
-        val updatedDays = current.days.filter { it.date != newDay.date } + newDay
+        // Lọc bỏ ngày cũ có cùng date, thêm ngày mới, rồi xóa luôn các ngày có exerciseIds rỗng
+        val updatedDays = (current.days.filter { it.date != newDay.date } + newDay)
+            .filter { it.exerciseIds.isNotEmpty() }
         firebaseManager.updateScheduleDays(
             userId = uid,
             scheduleId = scheduleId,

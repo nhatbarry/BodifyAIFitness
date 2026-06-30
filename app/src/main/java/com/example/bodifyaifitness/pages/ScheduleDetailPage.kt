@@ -130,7 +130,10 @@ fun ScheduleDetailPage(
     }
 
     val markedDates = remember(schedule) {
-        schedule?.days?.map { normDate(it.date) }?.toSet() ?: emptySet()
+        schedule?.days
+            ?.filter { it.exerciseIds.isNotEmpty() }
+            ?.map { normDate(it.date) }
+            ?.toSet() ?: emptySet()
     }
 
     val selectedDayExerciseIds = remember(schedule, selectedDate) {
@@ -214,10 +217,15 @@ fun ScheduleDetailPage(
                     },
                     onRemoveExercise = { exerciseId ->
                         val updated = selectedDayExerciseIds.filter { it != exerciseId }
-                        scheduleViewModel.addWorkoutDay(
-                            scheduleId,
-                            WorkoutDay(date = selectedDate, exerciseIds = updated)
-                        )
+                        if (updated.isEmpty()) {
+                            // Xóa hẳn ngày này khỏi lịch khi không còn bài tập nào
+                            scheduleViewModel.removeWorkoutDay(scheduleId, selectedDate)
+                        } else {
+                            scheduleViewModel.addWorkoutDay(
+                                scheduleId,
+                                WorkoutDay(date = selectedDate, exerciseIds = updated)
+                            )
+                        }
                     }
                 )
             }
