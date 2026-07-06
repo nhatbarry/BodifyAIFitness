@@ -130,6 +130,27 @@ class ScheduleViewModel : ViewModel() {
             }
         )
     }
+
+    /**
+     * Removes a single exercise from a day, computing the new exerciseIds list from the
+     * *current* [_selectedSchedule] value read at call time — not from a list the caller
+     * (e.g. a swipe-to-delete callback) captured earlier. Swiping several items back-to-back
+     * calls this repeatedly before Compose necessarily recomposes in between; if each call
+     * were to recompute "the new list" from a Composable-side snapshot, a fast second swipe
+     * could still be looking at the pre-first-removal list and resurrect the first item when
+     * it writes back. Doing the read-modify-write here, against the always-fresh StateFlow
+     * value, keeps every call correct regardless of recomposition timing.
+     */
+    fun removeExerciseFromDay(scheduleId: String, date: Long, exerciseId: String, onSuccess: () -> Unit = {}) {
+        val current = _selectedSchedule.value ?: return
+        val day = current.days.find { it.date == date } ?: return
+        val updatedIds = day.exerciseIds.filter { it != exerciseId }
+        if (updatedIds.isEmpty()) {
+            removeWorkoutDay(scheduleId, date, onSuccess)
+        } else {
+            addWorkoutDay(scheduleId, WorkoutDay(date = date, exerciseIds = updatedIds), onSuccess)
+        }
+    }
 }
 
 sealed class ScheduleState {

@@ -49,8 +49,8 @@
 
     <!-- Account -->
     <string name="default_athlete">Vận động viên</string>
-    <string name="label_workouts">Buổi tập</string>
-    <string name="label_streak">Chuỗi</string>
+    <string name="label_workouts">Bài tập</string>
+    <string name="label_streak">Buổi</string>
     <string name="label_volume">Khối lượng</string>
     <string name="btn_edit_profile">Sửa hồ sơ</string>
     <string name="btn_sign_out">Đăng xuất</string>

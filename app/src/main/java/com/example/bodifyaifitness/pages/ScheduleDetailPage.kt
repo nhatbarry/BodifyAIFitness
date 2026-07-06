@@ -220,20 +220,13 @@ fun ScheduleDetailPage(
                         navController.navigate("exercise_detail/$id")
                     },
                     onRemoveExercise = { exerciseId ->
-                        val refreshStartTab = {
-                            if (selectedDate == todayNorm) logViewModel.loadTodayData()
-                        }
-                        val updated = selectedDayExerciseIds.filter { it != exerciseId }
-                        if (updated.isEmpty()) {
-                            // Xóa hẳn ngày này khỏi lịch khi không còn bài tập nào
-                            scheduleViewModel.removeWorkoutDay(scheduleId, selectedDate, onSuccess = refreshStartTab)
-                        } else {
-                            scheduleViewModel.addWorkoutDay(
-                                scheduleId,
-                                WorkoutDay(date = selectedDate, exerciseIds = updated),
-                                onSuccess = refreshStartTab
-                            )
-                        }
+                        // Tính toán nằm trong ViewModel, đọc đúng state mới nhất tại thời điểm
+                        // gọi — vuốt xóa nhiều bài liên tiếp không còn bị ghi đè lẫn nhau do
+                        // dùng snapshot cũ từ lần render trước.
+                        scheduleViewModel.removeExerciseFromDay(
+                            scheduleId, selectedDate, exerciseId,
+                            onSuccess = { if (selectedDate == todayNorm) logViewModel.loadTodayData() }
+                        )
                     }
                 )
             }
