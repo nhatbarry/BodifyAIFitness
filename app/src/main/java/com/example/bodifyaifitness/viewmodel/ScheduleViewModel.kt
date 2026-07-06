@@ -88,31 +88,46 @@ class ScheduleViewModel : ViewModel() {
             ?.schedules?.firstOrNull { it.isActive }
     }
 
-    fun addWorkoutDay(scheduleId: String, newDay: WorkoutDay) {
+    fun addWorkoutDay(scheduleId: String, newDay: WorkoutDay, onSuccess: () -> Unit = {}) {
         val uid = auth.currentUser?.uid ?: return
         val current = _selectedSchedule.value ?: return
         // Lọc bỏ ngày cũ có cùng date, thêm ngày mới, rồi xóa luôn các ngày có exerciseIds rỗng
         val updatedDays = (current.days.filter { it.date != newDay.date } + newDay)
             .filter { it.exerciseIds.isNotEmpty() }
+
+        // Cập nhật state ngay (optimistic) để các thao tác liên tiếp (vd vuốt xóa nhiều bài
+        // liên tục) đọc được state mới nhất thay vì phải chờ Firestore round-trip — tránh
+        // race condition ghi đè lẫn nhau.
+        _selectedSchedule.value = current.copy(days = updatedDays)
+
         firebaseManager.updateScheduleDays(
             userId = uid,
             scheduleId = scheduleId,
             days = updatedDays,
-            onSuccess = { _selectedSchedule.value = current.copy(days = updatedDays) },
-            onFailure = { _scheduleState.value = ScheduleState.Error(it.message ?: "Update failed") }
+            onSuccess = { onSuccess() },
+            onFailure = {
+                _selectedSchedule.value = current // rollback
+                _scheduleState.value = ScheduleState.Error(it.message ?: "Update failed")
+            }
         )
     }
 
-    fun removeWorkoutDay(scheduleId: String, date: Long) {
+    fun removeWorkoutDay(scheduleId: String, date: Long, onSuccess: () -> Unit = {}) {
         val uid = auth.currentUser?.uid ?: return
         val current = _selectedSchedule.value ?: return
         val updatedDays = current.days.filter { it.date != date }
+
+        _selectedSchedule.value = current.copy(days = updatedDays) // optimistic
+
         firebaseManager.updateScheduleDays(
             userId = uid,
             scheduleId = scheduleId,
             days = updatedDays,
-            onSuccess = { _selectedSchedule.value = current.copy(days = updatedDays) },
-            onFailure = { _scheduleState.value = ScheduleState.Error(it.message ?: "Update failed") }
+            onSuccess = { onSuccess() },
+            onFailure = {
+                _selectedSchedule.value = current // rollback
+                _scheduleState.value = ScheduleState.Error(it.message ?: "Update failed")
+            }
         )
     }
 }

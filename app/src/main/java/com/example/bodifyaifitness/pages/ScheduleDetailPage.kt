@@ -148,7 +148,10 @@ fun ScheduleDetailPage(
                 onConfirm = { ids ->
                     scheduleViewModel.addWorkoutDay(
                         scheduleId,
-                        WorkoutDay(date = selectedDate, exerciseIds = ids)
+                        WorkoutDay(date = selectedDate, exerciseIds = ids),
+                        onSuccess = {
+                            if (selectedDate == todayNorm) logViewModel.loadTodayData()
+                        }
                     )
                     showExercisePicker = false
                 },
@@ -216,14 +219,18 @@ fun ScheduleDetailPage(
                         navController.navigate("exercise_detail/$id")
                     },
                     onRemoveExercise = { exerciseId ->
+                        val refreshStartTab = {
+                            if (selectedDate == todayNorm) logViewModel.loadTodayData()
+                        }
                         val updated = selectedDayExerciseIds.filter { it != exerciseId }
                         if (updated.isEmpty()) {
                             // Xóa hẳn ngày này khỏi lịch khi không còn bài tập nào
-                            scheduleViewModel.removeWorkoutDay(scheduleId, selectedDate)
+                            scheduleViewModel.removeWorkoutDay(scheduleId, selectedDate, onSuccess = refreshStartTab)
                         } else {
                             scheduleViewModel.addWorkoutDay(
                                 scheduleId,
-                                WorkoutDay(date = selectedDate, exerciseIds = updated)
+                                WorkoutDay(date = selectedDate, exerciseIds = updated),
+                                onSuccess = refreshStartTab
                             )
                         }
                     }
@@ -250,7 +257,10 @@ fun ScheduleDetailPage(
                     copiedExerciseIds?.let { ids ->
                         scheduleViewModel.addWorkoutDay(
                             scheduleId,
-                            WorkoutDay(date = selectedDate, exerciseIds = ids)
+                            WorkoutDay(date = selectedDate, exerciseIds = ids),
+                            onSuccess = {
+                                if (selectedDate == todayNorm) logViewModel.loadTodayData()
+                            }
                         )
                     }
                     isSpeedDialExpanded = false
