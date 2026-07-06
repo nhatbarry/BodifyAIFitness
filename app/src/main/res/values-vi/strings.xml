@@ -158,6 +158,8 @@
 
     <!-- Start / Workout Log -->
     <string name="content_desc_ai_camera_start">Bắt đầu đếm rep bằng camera AI</string>
+    <string name="label_continue_ai_camera">Tiếp tục tập với AI</string>
+    <string name="label_ai_camera_caption">Tự động đếm rep bằng camera AI</string>
     <string name="label_today">Hôm nay</string>
     <string name="empty_today_workout">Hôm nay không có lịch tập</string>
     <string name="empty_today_workout_hint">Thêm ngày tập vào lịch của bạn</string>
@@ -168,6 +170,13 @@
     <string name="label_reps">SỐ REP</string>
     <string name="btn_clear">XÓA</string>
     <string name="label_set_row">%1$.1f kgs × %2$d reps</string>
+
+    <!-- AI Camera form feedback -->
+    <string name="pose_feedback_go_deeper">Xuống sâu hơn!</string>
+    <string name="pose_feedback_back_straight">Giữ lưng thẳng!</string>
+    <string name="pose_feedback_raise_hips">Siết bụng, nâng hông lên!</string>
+    <string name="pose_feedback_lower_hips">Hạ hông xuống!</string>
+    <string name="pose_feedback_lower_further">Xuống thấp hơn nữa, ngực gần sát đất!</string>
 
     <!-- Calendar day headers -->
     <string-array name="calendar_day_headers">

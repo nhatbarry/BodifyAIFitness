@@ -21,11 +21,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.FlipCameraAndroid
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,8 +56,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.dataclass.Exercise
-import com.example.bodifyaifitness.posecoach.FormFeedback
+import com.example.bodifyaifitness.posecoach.FeedbackKey
 import com.example.bodifyaifitness.posecoach.PoseAnalyzer
 import com.example.bodifyaifitness.posecoach.PoseFrame
 import com.example.bodifyaifitness.posecoach.PoseOverlay
@@ -107,7 +112,7 @@ fun PoseCameraPage(
                 )
             }
 
-            is PoseCameraState.Ready -> PoseCameraContent(exercise = s.exercise)
+            is PoseCameraState.Ready -> PoseCameraContent(exercise = s.exercise, navController = navController)
         }
 
         // Top bar luôn hiện, kể cả khi đang loading/lỗi, để người dùng thoát ra được.
@@ -122,6 +127,14 @@ fun PoseCameraPage(
     }
 }
 
+private fun FeedbackKey.stringRes(): Int = when (this) {
+    FeedbackKey.GO_DEEPER -> R.string.pose_feedback_go_deeper
+    FeedbackKey.BACK_STRAIGHT -> R.string.pose_feedback_back_straight
+    FeedbackKey.RAISE_HIPS -> R.string.pose_feedback_raise_hips
+    FeedbackKey.LOWER_HIPS -> R.string.pose_feedback_lower_hips
+    FeedbackKey.LOWER_FURTHER -> R.string.pose_feedback_lower_further
+}
+
 @Composable
 private fun CenteredMessage(content: @Composable () -> Unit) {
     Box(
@@ -131,7 +144,7 @@ private fun CenteredMessage(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun PoseCameraContent(exercise: Exercise) {
+private fun PoseCameraContent(exercise: Exercise, navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -183,7 +196,7 @@ private fun PoseCameraContent(exercise: Exercise) {
     var useFrontCamera by remember { mutableStateOf(false) }
     var poseFrame by remember { mutableStateOf<PoseFrame?>(null) }
     var result by remember { mutableStateOf<ProcessorResult?>(null) }
-    var displayedFeedback by remember { mutableStateOf<FormFeedback?>(null) }
+    var displayedFeedback by remember { mutableStateOf<String?>(null) }
 
     val analyzer = remember(processor) {
         PoseAnalyzer(
@@ -191,8 +204,12 @@ private fun PoseCameraContent(exercise: Exercise) {
             onResult = { r ->
                 result = r
                 r.feedback?.let { fb ->
-                    displayedFeedback = fb
-                    ttsCoach.speakFeedback(fb)
+                    // context.getString() is a plain resource lookup, safe to call from this
+                    // background analyzer-thread callback (unlike stringResource(), which
+                    // requires being inside composition).
+                    val text = context.getString(fb.key.stringRes())
+                    displayedFeedback = text
+                    ttsCoach.speak(text)
                 }
             },
             onPoseDetected = { frame -> poseFrame = frame }
@@ -275,7 +292,7 @@ private fun PoseCameraContent(exercise: Exercise) {
         }
 
         // ── Feedback banner ──────────────────────────────────────────────────
-        displayedFeedback?.let { fb ->
+        displayedFeedback?.let { text ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -287,7 +304,7 @@ private fun PoseCameraContent(exercise: Exercise) {
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = fb.message,
+                    text = text,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp
@@ -295,10 +312,8 @@ private fun PoseCameraContent(exercise: Exercise) {
             }
         }
 
-        // ── Bottom rep counter ───────────────────────────────────────────────
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+        // ── Bottom rep counter + Stop ─────────────────────────────────────────
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
@@ -308,25 +323,52 @@ private fun PoseCameraContent(exercise: Exercise) {
                 .background(GymSurfaceBg.copy(alpha = 0.9f))
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-            Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Text(
+                        text = exercise.name.replaceFirstChar { it.uppercase() },
+                        color = TextWhite,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = if (poseFrame == null) "Đang tìm người trong khung hình…" else "Đứng để camera thấy toàn thân",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
                 Text(
-                    text = exercise.name.replaceFirstChar { it.uppercase() },
-                    color = TextWhite,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = if (poseFrame == null) "Đang tìm người trong khung hình…" else "Đứng để camera thấy toàn thân",
-                    color = TextMuted,
-                    fontSize = 11.sp
+                    text = "${result?.repCount ?: 0}",
+                    color = GymOrange,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 40.sp
                 )
             }
-            Text(
-                text = "${result?.repCount ?: 0}",
-                color = GymOrange,
-                fontWeight = FontWeight.Black,
-                fontSize = 40.sp
-            )
+
+            Spacer(Modifier.height(14.dp))
+
+            Button(
+                onClick = {
+                    val repCount = result?.repCount ?: 0
+                    // Bỏ màn camera khỏi back stack trước, để bấm Back từ trang log không
+                    // quay lại camera nữa.
+                    navController.popBackStack()
+                    navController.navigate(
+                        "exercise_detail/${exercise.id}?showLog=true&prefillReps=$repCount"
+                    )
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE74C3C)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Stop, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Dừng & ghi số rep", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
         }
     }
 }

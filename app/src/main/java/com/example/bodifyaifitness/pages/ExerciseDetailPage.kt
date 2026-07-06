@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -91,6 +92,7 @@ fun ExerciseDetailPage(
     exerciseId: String,
     navController: NavController,
     showLog: Boolean = false,
+    prefillReps: Int = 0,
     detailViewModel: ExerciseDetailViewModel = viewModel()
 ) {
     // Activity-scoped: cùng instance với StartPage → update real-time khi back
@@ -120,6 +122,9 @@ fun ExerciseDetailPage(
                         ?.sets ?: emptyList()
                     LogBottomPanel(
                         currentSets = currentSets,
+                        prefillReps = prefillReps,
+                        isAiSupported = exercise.isAISupported,
+                        onStartAiCamera = { navController.navigate("camera_track/$exerciseId") },
                         onSave      = { sets ->
                             workoutLogViewModel.saveSets(exerciseId, exercise.name, sets)
                         }
@@ -389,11 +394,15 @@ private fun ExerciseDetailContent(
 @Composable
 private fun LogBottomPanel(
     currentSets: List<ExerciseSet>,
+    prefillReps: Int = 0,
+    isAiSupported: Boolean = false,
+    onStartAiCamera: () -> Unit = {},
     onSave: (List<ExerciseSet>) -> Unit
 ) {
     var sets       by remember { mutableStateOf(currentSets.toList()) }
     var weight     by remember { mutableStateOf(currentSets.lastOrNull()?.weight ?: 20.0) }
-    var reps       by remember { mutableStateOf(currentSets.lastOrNull()?.reps ?: 10) }
+    // Ưu tiên số rep vừa đếm được từ camera AI (nếu có) hơn set gần nhất đã log.
+    var reps       by remember { mutableStateOf(if (prefillReps > 0) prefillReps else currentSets.lastOrNull()?.reps ?: 10) }
     var editingIdx by remember { mutableStateOf<Int?>(null) }
 
     // Sync khi data từ Firestore arrive lần đầu
@@ -423,6 +432,49 @@ private fun LogBottomPanel(
             )
 
             Spacer(Modifier.height(14.dp))
+
+            // Tiếp tục tập với camera AI — chỉ hiện với bài tập isAISupported
+            if (isAiSupported) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(GymOrange.copy(alpha = 0.1f))
+                        .clickable { onStartAiCamera() }
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.label_continue_ai_camera),
+                            color = TextWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = stringResource(R.string.label_ai_camera_caption),
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(GymOrange)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = stringResource(R.string.content_desc_ai_camera_start),
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(14.dp))
+            }
 
             // Edit mode banner
             if (editingIdx != null) {

@@ -11,9 +11,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import com.example.bodifyaifitness.composable.AppNavigation
 import com.example.bodifyaifitness.notification.NotificationHelper
 import com.example.bodifyaifitness.ui.theme.BodifyAIFitnessTheme
@@ -33,6 +35,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Mặc định app luôn mở bằng tiếng Việt (không theo system locale) cho tới khi user tự
+        // bấm nút đổi ngôn ngữ ở AccountPage — chỉ set lần đầu, không ghi đè lựa chọn của user.
+        if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("vi"))
+        }
 
         // Tạo notification channel (phải gọi trước khi hiện bất kỳ notification nào)
         NotificationHelper.createNotificationChannel(this)

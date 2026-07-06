@@ -6,11 +6,21 @@ import com.google.mlkit.vision.pose.PoseLandmark
 /**
  * Push-up rep counter driven by the Shoulder-Elbow-Wrist angle, with a separate
  * Shoulder-Hip-Ankle check for body alignment (sagging vs. piking).
- * High plank (angle > 160°) -> Bottom (angle < 90°) -> High plank = 1 rep.
+ * High plank (angle > 160°) -> Bottom (angle < 140°) -> High plank = 1 rep.
+ *
+ * downThreshold loosened well past squat's equivalent (100°) because the elbow angle is much
+ * more sensitive to camera viewing angle than a squat's hip-knee-ankle angle: a squat's leg
+ * swings mostly within the camera's image plane, but a push-up's arm bend is easily
+ * foreshortened by anything less than a perfect side-on camera, making the measured angle
+ * read straighter than the real bend. The same foreshortening is why the alignment check
+ * below also needs a wider dead zone and debounce, or it fires on camera-angle noise alone.
  */
-class PushUpProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 160.0) {
+class PushUpProcessor : ExerciseProcessor(downThreshold = 140.0, upThreshold = 160.0) {
 
     override val exerciseName = "Push-up"
+
+    private var consecutiveSagging = 0
+    private var consecutivePiking = 0
 
     private data class Side(val shoulder: Int, val elbow: Int, val wrist: Int, val hip: Int, val ankle: Int)
     private val leftSide = Side(
@@ -34,6 +44,9 @@ class PushUpProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 16
         val shoulder = pose.getPoseLandmark(s.shoulder) ?: return null
         val elbow = pose.getPoseLandmark(s.elbow) ?: return null
         val wrist = pose.getPoseLandmark(s.wrist) ?: return null
+        // Off-angle camera / partial occlusion makes ML Kit guess landmark positions —
+        // skip the frame instead of feeding a noisy angle into the rep counter.
+        if (!PoseAngleUtils.allConfident(shoulder, elbow, wrist)) return null
         return PoseAngleUtils.angleOf(shoulder, elbow, wrist)
     }
 
@@ -42,16 +55,26 @@ class PushUpProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 16
         val shoulder = pose.getPoseLandmark(s.shoulder) ?: return null
         val hip = pose.getPoseLandmark(s.hip) ?: return null
         val ankle = pose.getPoseLandmark(s.ankle) ?: return null
+        if (!PoseAngleUtils.allConfident(shoulder, hip, ankle)) return null
 
         val alignmentAngle = PoseAngleUtils.angleOf(shoulder, hip, ankle)
-        if (alignmentAngle >= 160.0) return null // body is a straight line, nothing to say
+        if (alignmentAngle >= 160.0) {
+            consecutiveSagging = 0
+            consecutivePiking = 0
+            return null // body is a straight line, nothing to say
+        }
 
         // Ratio of how far the hip sits from the shoulder-ankle line, normalized by body
         // length: positive = sagging towards the floor, negative = piking up.
         val deviationRatio = PoseAngleUtils.normalizedVerticalDeviationFromLine(shoulder, hip, ankle)
+        consecutiveSagging = if (deviationRatio > SAG_RATIO) consecutiveSagging + 1 else 0
+        consecutivePiking = if (deviationRatio < -PIKE_RATIO) consecutivePiking + 1 else 0
+
+        // Same debounce idea as rep counting: require the deviation to hold for a few frames
+        // in a row before speaking up, so camera-angle jitter alone can't trigger it.
         return when {
-            deviationRatio > SAG_RATIO -> FormFeedback("Keep your core tight, raise your hips!", FeedbackSeverity.WARNING)
-            deviationRatio < -PIKE_RATIO -> FormFeedback("Lower your hips!", FeedbackSeverity.WARNING)
+            consecutiveSagging >= FORM_DEBOUNCE_FRAMES -> FormFeedback(FeedbackKey.RAISE_HIPS, FeedbackSeverity.WARNING)
+            consecutivePiking >= FORM_DEBOUNCE_FRAMES -> FormFeedback(FeedbackKey.LOWER_HIPS, FeedbackSeverity.WARNING)
             else -> null
         }
     }
@@ -59,11 +82,14 @@ class PushUpProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 16
     override fun onRepCompleted(): FormFeedback? = null
 
     override fun onShallowRep(): FormFeedback =
-        FormFeedback("Lower down further, chest closer to the ground!", FeedbackSeverity.WARNING)
+        FormFeedback(FeedbackKey.LOWER_FURTHER, FeedbackSeverity.WARNING)
 
     private companion object {
-        // Tunable starting points; re-check against real recordings before shipping.
-        const val SAG_RATIO = 0.08f
-        const val PIKE_RATIO = 0.08f
+        // Widened from 0.08 — a perfectly straight body can still measure some deviation once
+        // the camera isn't a perfect side-on view, so the dead zone needs more margin than a
+        // straight-on measurement would.
+        const val SAG_RATIO = 0.12f
+        const val PIKE_RATIO = 0.12f
+        const val FORM_DEBOUNCE_FRAMES = 3
     }
 }

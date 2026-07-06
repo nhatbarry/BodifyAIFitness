@@ -64,20 +64,26 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             SetupProfilePage(navController = rootNavController)
         }
         composable(
-            route = "exercise_detail/{exerciseId}?showLog={showLog}",
+            route = "exercise_detail/{exerciseId}?showLog={showLog}&prefillReps={prefillReps}",
             arguments = listOf(
                 navArgument("showLog") {
                     type = NavType.BoolType
                     defaultValue = false
+                },
+                navArgument("prefillReps") {
+                    type = NavType.IntType
+                    defaultValue = 0
                 }
             )
         ) { backStackEntry ->
             val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: ""
             val showLog    = backStackEntry.arguments?.getBoolean("showLog") ?: false
+            val prefillReps = backStackEntry.arguments?.getInt("prefillReps") ?: 0
             ExerciseDetailPage(
                 exerciseId = exerciseId,
                 navController = rootNavController,
-                showLog = showLog
+                showLog = showLog,
+                prefillReps = prefillReps
             )
         }
         composable("schedule_detail/{scheduleId}") { backStackEntry ->

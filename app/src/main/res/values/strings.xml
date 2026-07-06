@@ -158,6 +158,8 @@
 
     <!-- Start / Workout Log -->
     <string name="content_desc_ai_camera_start">Start AI camera rep counter</string>
+    <string name="label_continue_ai_camera">Continue training with AI</string>
+    <string name="label_ai_camera_caption">Auto-count your reps using the AI camera</string>
     <string name="label_today">Today</string>
     <string name="empty_today_workout">No workout scheduled today</string>
     <string name="empty_today_workout_hint">Add workout days to your schedule</string>
@@ -171,6 +173,13 @@
     <string name="label_set_row">%1$.1f kgs × %2$d reps</string>
     <string name="label_today_log">Today\'s Log</string>
     <string name="label_workout_stats">%1$d sets · %2$d reps · %3$.0fkg vol</string>
+
+    <!-- AI Camera form feedback -->
+    <string name="pose_feedback_go_deeper">Go deeper!</string>
+    <string name="pose_feedback_back_straight">Keep your back straight!</string>
+    <string name="pose_feedback_raise_hips">Keep your core tight, raise your hips!</string>
+    <string name="pose_feedback_lower_hips">Lower your hips!</string>
+    <string name="pose_feedback_lower_further">Lower down further, chest closer to the ground!</string>
 
     <!-- Calendar day headers -->
     <string-array name="calendar_day_headers">

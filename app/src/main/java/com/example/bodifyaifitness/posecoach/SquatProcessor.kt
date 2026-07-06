@@ -5,15 +5,16 @@ import com.google.mlkit.vision.pose.PoseLandmark
 
 /**
  * Squat rep counter driven by the Hip-Knee-Ankle angle.
- * Stand (angle > 160°) -> Bottom (angle < 90°) -> Stand = 1 rep.
+ * Stand (angle > 160°) -> Bottom (angle < 120°) -> Stand = 1 rep.
+ *
+ * downThreshold loosened further to 120° (was 100°, originally 90°) — a shallow/half squat
+ * now counts, no need to reach full/parallel depth. The old separate "hip at-or-below knee
+ * height" requirement was dropped entirely since it enforced a stricter depth than the angle
+ * threshold already does, which was the opposite of what's wanted here.
  */
-class SquatProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 160.0) {
+class SquatProcessor : ExerciseProcessor(downThreshold = 120.0, upThreshold = 160.0) {
 
     override val exerciseName = "Squat"
-
-    // True until the hip is proven to reach at-or-below knee height during the current
-    // rep attempt; reset every time the user is back to a tall stand.
-    private var insufficientDepthByHipHeight = true
 
     private data class Side(val shoulder: Int, val hip: Int, val knee: Int, val ankle: Int)
     private val leftSide = Side(
@@ -35,32 +36,30 @@ class SquatProcessor : ExerciseProcessor(downThreshold = 90.0, upThreshold = 160
         val hip = pose.getPoseLandmark(s.hip) ?: return null
         val knee = pose.getPoseLandmark(s.knee) ?: return null
         val ankle = pose.getPoseLandmark(s.ankle) ?: return null
+        // Off-angle camera / partial occlusion makes ML Kit guess landmark positions —
+        // skip the frame instead of feeding a noisy angle into the rep counter.
+        if (!PoseAngleUtils.allConfident(hip, knee, ankle)) return null
 
-        val angle = PoseAngleUtils.angleOf(hip, knee, ankle)
-        when {
-            angle > 160.0 -> insufficientDepthByHipHeight = true // standing tall, reset for next rep
-            angle < 110.0 && hip.position.y >= knee.position.y -> insufficientDepthByHipHeight = false
-        }
-        return angle
+        return PoseAngleUtils.angleOf(hip, knee, ankle)
     }
 
     override fun checkForm(pose: Pose, angle: Double, stage: RepStage): FormFeedback? {
-        if (angle > 150.0) return null // standing normally, nothing to correct
+        if (angle > upThreshold - 10.0) return null // standing normally, nothing to correct
 
         val s = side(pose)
         val shoulder = pose.getPoseLandmark(s.shoulder) ?: return null
         val hip = pose.getPoseLandmark(s.hip) ?: return null
         val knee = pose.getPoseLandmark(s.knee) ?: return null
+        if (!PoseAngleUtils.allConfident(shoulder, hip, knee)) return null
 
         val backAngle = PoseAngleUtils.angleOf(shoulder, hip, knee)
         return if (backAngle < 45.0) {
-            FormFeedback("Keep your back straight!", FeedbackSeverity.WARNING)
+            FormFeedback(FeedbackKey.BACK_STRAIGHT, FeedbackSeverity.WARNING)
         } else null
     }
 
-    override fun onRepCompleted(): FormFeedback? =
-        if (insufficientDepthByHipHeight) FormFeedback("Go deeper!", FeedbackSeverity.WARNING) else null
+    override fun onRepCompleted(): FormFeedback? = null
 
     override fun onShallowRep(): FormFeedback =
-        FormFeedback("Go deeper!", FeedbackSeverity.WARNING)
+        FormFeedback(FeedbackKey.GO_DEEPER, FeedbackSeverity.WARNING)
 }

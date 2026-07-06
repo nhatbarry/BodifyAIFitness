@@ -7,7 +7,18 @@ enum class RepStage { UP, DOWN }
 
 enum class FeedbackSeverity { INFO, WARNING }
 
-data class FormFeedback(val message: String, val severity: FeedbackSeverity)
+/** Identifies which form cue to show/speak — kept as a key (not a raw string) so the UI layer
+ *  can resolve it to a localized string via Android resources, matching the app's Vietnamese/
+ *  English toggle instead of always speaking English. */
+enum class FeedbackKey {
+    GO_DEEPER,
+    BACK_STRAIGHT,
+    RAISE_HIPS,
+    LOWER_HIPS,
+    LOWER_FURTHER
+}
+
+data class FormFeedback(val key: FeedbackKey, val severity: FeedbackSeverity)
 
 data class ProcessorResult(
     val repCount: Int,
@@ -29,9 +40,10 @@ data class ProcessorResult(
  * and [onShallowRep] fires instead.
  */
 abstract class ExerciseProcessor(
-    private val downThreshold: Double,
-    private val upThreshold: Double,
-    private val feedbackCooldownMs: Long = 2500L
+    protected val downThreshold: Double,
+    protected val upThreshold: Double,
+    private val feedbackCooldownMs: Long = 2500L,
+    private val debounceFrames: Int = 2
 ) {
     abstract val exerciseName: String
 
@@ -41,9 +53,19 @@ abstract class ExerciseProcessor(
     private var repCount = 0
     private var minAngleThisRep = 180.0
     private var hasDippedThisRep = false
-    private val lastSpokenAt = HashMap<String, Long>()
+    private val lastSpokenAt = HashMap<FeedbackKey, Long>()
 
-    /** Primary joint angle that drives the Up/Down state machine (e.g. knee angle for squat). */
+    // Consecutive-frame confirmation: a stage transition only fires once the raw angle has
+    // been past the threshold for [debounceFrames] frames in a row. This rejects a single
+    // noisy/off-angle-camera frame the same way smoothing would, but — unlike an average —
+    // it doesn't lag behind fast reps, since it only asks "did this keep being true", not
+    // "what's the weighted history".
+    private var consecutiveBelowDown = 0
+    private var consecutiveAboveUp = 0
+
+    /** Primary joint angle that drives the Up/Down state machine (e.g. knee angle for squat).
+     *  Return null when the landmarks needed aren't reliably visible this frame — the frame
+     *  is then skipped entirely rather than fed a noisy angle into the state machine. */
     protected abstract fun primaryAngle(pose: Pose): Double?
 
     /** Real-time form check, called every frame regardless of stage. Return null for "no issue". */
@@ -59,18 +81,21 @@ abstract class ExerciseProcessor(
         val angle = primaryAngle(pose) ?: return null
         minAngleThisRep = minOf(minAngleThisRep, angle)
 
+        consecutiveBelowDown = if (angle < downThreshold) consecutiveBelowDown + 1 else 0
+        consecutiveAboveUp = if (angle > upThreshold) consecutiveAboveUp + 1 else 0
+
         var feedback: FormFeedback? = null
 
         when (stage) {
             RepStage.UP -> when {
-                angle < downThreshold -> {
+                consecutiveBelowDown >= debounceFrames -> {
                     stage = RepStage.DOWN
                     hasDippedThisRep = true
                 }
                 angle < attemptThreshold -> hasDippedThisRep = true
             }
             RepStage.DOWN -> {
-                if (angle > upThreshold) {
+                if (consecutiveAboveUp >= debounceFrames) {
                     stage = RepStage.UP
                     repCount++
                     feedback = emit(onRepCompleted())
@@ -95,13 +120,13 @@ abstract class ExerciseProcessor(
         return ProcessorResult(repCount, stage, angle, feedback)
     }
 
-    /** De-dupes a message so the same cue isn't re-spoken more often than [feedbackCooldownMs]. */
+    /** De-dupes a cue so the same one isn't re-spoken more often than [feedbackCooldownMs]. */
     private fun emit(feedback: FormFeedback?): FormFeedback? {
         feedback ?: return null
         val now = System.currentTimeMillis()
-        val last = lastSpokenAt[feedback.message] ?: 0L
+        val last = lastSpokenAt[feedback.key] ?: 0L
         if (now - last < feedbackCooldownMs) return null
-        lastSpokenAt[feedback.message] = now
+        lastSpokenAt[feedback.key] = now
         return feedback
     }
 
@@ -110,6 +135,8 @@ abstract class ExerciseProcessor(
         repCount = 0
         minAngleThisRep = 180.0
         hasDippedThisRep = false
+        consecutiveBelowDown = 0
+        consecutiveAboveUp = 0
         lastSpokenAt.clear()
     }
 }
