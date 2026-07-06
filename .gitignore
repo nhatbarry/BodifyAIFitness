@@ -23,3 +23,10 @@ local.properties
 *.jks
 *.keystore
 /key
+
+# Data migration scripts (scripts/): local deps + Firebase service account secret
+/scripts/node_modules/
+/scripts/serviceAccountKey.json
+
+# Raw exercise dataset (images/gifs/json) — goes to Firestore + a separate media repo, not here
+/to_imported/
