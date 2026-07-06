@@ -26,6 +26,12 @@ data class Exercise(
     @get:PropertyName("isAISupported")
     @set:PropertyName("isAISupported")
     var isAISupported: Boolean = false,
+    // Thuật toán camera AI dùng để đếm rep/chấm form cho bài này, vd "squat" / "pushup".
+    // Nhiều bài tập có thể dùng chung 1 thuật toán. Chỉ có ý nghĩa khi isAISupported = true;
+    // set thủ công trong Firestore Console.
+    @get:PropertyName("ai_algorithm")
+    @set:PropertyName("ai_algorithm")
+    var aiAlgorithm: String = "",
     @get:PropertyName("instruction_steps")
     @set:PropertyName("instruction_steps")
     var instructionSteps: Map<String, List<String>> = emptyMap()

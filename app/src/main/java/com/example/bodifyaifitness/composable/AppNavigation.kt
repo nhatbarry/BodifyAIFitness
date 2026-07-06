@@ -16,6 +16,7 @@ import com.example.bodifyaifitness.pages.EditProfilePage
 import com.example.bodifyaifitness.pages.ExerciseDetailPage
 import com.example.bodifyaifitness.pages.ForgotPasswordPage
 import com.example.bodifyaifitness.pages.LoginPage
+import com.example.bodifyaifitness.pages.PoseCameraPage
 import com.example.bodifyaifitness.pages.ScheduleDetailPage
 import com.example.bodifyaifitness.pages.SetupProfilePage
 import com.example.bodifyaifitness.pages.SignUpPage
@@ -82,6 +83,10 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("schedule_detail/{scheduleId}") { backStackEntry ->
             val scheduleId = backStackEntry.arguments?.getString("scheduleId") ?: ""
             ScheduleDetailPage(scheduleId = scheduleId, navController = rootNavController)
+        }
+        composable("camera_track/{exerciseId}") { backStackEntry ->
+            val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: ""
+            PoseCameraPage(exerciseId = exerciseId, navController = rootNavController)
         }
     }
 }

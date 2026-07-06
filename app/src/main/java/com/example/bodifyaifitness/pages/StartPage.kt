@@ -17,14 +17,17 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -154,6 +157,9 @@ fun StartPage(modifier: Modifier = Modifier, navController: NavController) {
                             sets = sets,
                             onClick = {
                                 navController.navigate("exercise_detail/${exercise.id}?showLog=true")
+                            },
+                            onPlayClick = {
+                                navController.navigate("camera_track/${exercise.id}")
                             }
                         )
                     }
@@ -167,7 +173,8 @@ fun StartPage(modifier: Modifier = Modifier, navController: NavController) {
 private fun ExerciseTrackCard(
     exercise: Exercise,
     sets: List<ExerciseSet>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onPlayClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
@@ -218,6 +225,24 @@ private fun ExerciseTrackCard(
                         StatChip(text = "$totalSets sets", bgColor = Color(0xFF1E2E1E), textColor = Color(0xFF4CAF50))
                         StatChip(text = "$totalReps reps", bgColor = Color(0xFF1A1A2E), textColor = Color(0xFF7986CB))
                         StatChip(text = "${"%.0f".format(volume)}kg", bgColor = Color(0xFF2A1E10), textColor = GymOrange)
+                    }
+                }
+            }
+            if (exercise.isAISupported) {
+                IconButton(onClick = onPlayClick) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(GymOrange)
+                    ) {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = stringResource(R.string.content_desc_ai_camera_start),
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }

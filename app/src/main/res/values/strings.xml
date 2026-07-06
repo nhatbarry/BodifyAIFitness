@@ -157,6 +157,7 @@
     <string name="content_desc_delete_session">Delete session</string>
 
     <!-- Start / Workout Log -->
+    <string name="content_desc_ai_camera_start">Start AI camera rep counter</string>
     <string name="label_today">Today</string>
     <string name="empty_today_workout">No workout scheduled today</string>
     <string name="empty_today_workout_hint">Add workout days to your schedule</string>

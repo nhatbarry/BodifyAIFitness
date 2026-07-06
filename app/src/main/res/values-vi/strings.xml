@@ -157,6 +157,7 @@
     <string name="content_desc_delete_session">Xóa cuộc trò chuyện</string>
 
     <!-- Start / Workout Log -->
+    <string name="content_desc_ai_camera_start">Bắt đầu đếm rep bằng camera AI</string>
     <string name="label_today">Hôm nay</string>
     <string name="empty_today_workout">Hôm nay không có lịch tập</string>
     <string name="empty_today_workout_hint">Thêm ngày tập vào lịch của bạn</string>

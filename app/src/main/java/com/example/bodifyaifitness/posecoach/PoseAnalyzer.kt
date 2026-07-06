@@ -12,6 +12,13 @@ import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
 import java.util.concurrent.Executor
 
 /**
+ * One analyzed frame's pose plus the frame's own upright (post-rotation) dimensions —
+ * [PoseOverlay] needs the latter to map ML Kit's image-space landmark coordinates onto the
+ * on-screen preview.
+ */
+data class PoseFrame(val pose: Pose, val imageWidth: Int, val imageHeight: Int)
+
+/**
  * CameraX [ImageAnalysis.Analyzer]: decodes each frame with ML Kit Pose Detection
  * (stream mode) and forwards the pose to the active [ExerciseProcessor]. This class only
  * ever runs on the [ImageAnalysis] background executor supplied at bind time — it must
@@ -21,7 +28,7 @@ import java.util.concurrent.Executor
 class PoseAnalyzer(
     private var processor: ExerciseProcessor,
     private val onResult: (ProcessorResult) -> Unit,
-    private val onPoseDetected: (Pose) -> Unit = {}
+    private val onPoseDetected: (PoseFrame) -> Unit = {}
 ) : ImageAnalysis.Analyzer {
 
     private val detector: PoseDetector = PoseDetection.getClient(
@@ -44,11 +51,20 @@ class PoseAnalyzer(
             return
         }
 
-        val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        val rotation = imageProxy.imageInfo.rotationDegrees
+        val inputImage = InputImage.fromMediaImage(mediaImage, rotation)
+
+        // ML Kit returns landmarks in the upright (post-rotation) coordinate space, so a
+        // 90/270 rotation means the logical width/height are the raw buffer's swapped.
+        val (frameWidth, frameHeight) = if (rotation == 90 || rotation == 270) {
+            imageProxy.height to imageProxy.width
+        } else {
+            imageProxy.width to imageProxy.height
+        }
 
         detector.process(inputImage)
             .addOnSuccessListener { pose ->
-                onPoseDetected(pose)
+                onPoseDetected(PoseFrame(pose, frameWidth, frameHeight))
                 processor.process(pose)?.let(onResult)
             }
             .addOnCompleteListener {
