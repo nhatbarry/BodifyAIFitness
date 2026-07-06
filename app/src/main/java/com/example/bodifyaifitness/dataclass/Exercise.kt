@@ -5,6 +5,9 @@ import com.google.firebase.firestore.PropertyName
 data class Exercise(
     val id: String = "",
     val name: String = "",
+    @get:PropertyName("name_en")
+    @set:PropertyName("name_en")
+    var nameEn: String = "",            // Tên tiếng Anh để search ExerciseDB (fallback = name)
     val category: String = "",
     val target: String = "",
     val equipment: String = "",
@@ -27,15 +30,24 @@ data class Exercise(
     @set:PropertyName("instruction_steps")
     var instructionSteps: Map<String, List<String>> = emptyMap()
 ) {
+    /**
+     * URL ảnh tĩnh / thumbnail.
+     * Chỉ trả về nếu đã là URL hợp lệ (http/https), không thì rỗng.
+     */
     val thumbnailUrl: String
-        get() = thumbnail.toCloudinaryUrl()
+        get() = if (thumbnail.startsWith("http")) thumbnail else ""
 
+    /**
+     * URL GIF bài tập từ Firestore.
+     * Nếu rỗng thì UI sẽ tự fetch qua ExerciseDbRepository theo tên bài tập.
+     */
     val gifUrl: String
-        get() = gif.toCloudinaryUrl()
+        get() = if (gif.startsWith("http")) gif else ""
 
-    companion object {
-        private const val BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/master"
-        private fun String.toCloudinaryUrl() =
-            if (startsWith("http")) this else "$BASE/$this"
-    }
+    /**
+     * Tên dùng để search ExerciseDB API (tiếng Anh).
+     * Ưu tiên nameEn, fallback về name.
+     */
+    val searchName: String
+        get() = nameEn.ifBlank { name }
 }

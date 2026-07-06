@@ -8,9 +8,18 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/codeStyles
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# Build output exported/signed manually (APK, baseline profiles, metadata)
+/app/release/
+
+# Signing keys — never commit these
+*.jks
+*.keystore
+/key

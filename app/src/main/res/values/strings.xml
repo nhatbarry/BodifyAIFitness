@@ -147,6 +147,13 @@
     <string name="placeholder_ai_chat">Ask AI Coach…</string>
     <string name="ai_welcome_message">Hello! I\'m your AI Coach 💪\nFeel free to ask me anything about training, nutrition, or workout plans!</string>
     <string name="ai_error_message">An error occurred, please try again.</string>
+    <string name="content_desc_history">Chat history</string>
+    <string name="content_desc_new_chat">New chat</string>
+    <string name="title_chat_history">Chat History</string>
+    <string name="label_new_chat">New Chat</string>
+    <string name="label_no_history">No previous conversations</string>
+    <string name="label_no_history_hint">Start chatting with AI Coach to save history</string>
+    <string name="content_desc_delete_session">Delete session</string>
 
     <!-- Start / Workout Log -->
     <string name="label_today">Today</string>

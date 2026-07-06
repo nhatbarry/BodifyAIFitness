@@ -147,6 +147,13 @@
     <string name="placeholder_ai_chat">Hỏi AI Coach…</string>
     <string name="ai_welcome_message">Xin chào! Tôi là AI Coach của bạn 💪\nHỏi tôi bất cứ điều gì về tập luyện, dinh dưỡng, hay lịch tập nhé!</string>
     <string name="ai_error_message">Có lỗi xảy ra, vui lòng thử lại.</string>
+    <string name="content_desc_history">Lịch sử chat</string>
+    <string name="content_desc_new_chat">Cuộc trò chuyện mới</string>
+    <string name="title_chat_history">Lịch Sử Chat</string>
+    <string name="label_new_chat">Cuộc Trò Chuyện Mới</string>
+    <string name="label_no_history">Chưa có cuộc trò chuyện nào</string>
+    <string name="label_no_history_hint">Bắt đầu chat với AI Coach để lưu lịch sử</string>
+    <string name="content_desc_delete_session">Xóa cuộc trò chuyện</string>
 
     <!-- Start / Workout Log -->
     <string name="label_today">Hôm nay</string>

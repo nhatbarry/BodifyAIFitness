@@ -1,6 +1,7 @@
 package com.example.bodifyaifitness.database
 
 import android.util.Log
+import com.example.bodifyaifitness.dataclass.ChatSession
 import com.example.bodifyaifitness.dataclass.Exercise
 import com.example.bodifyaifitness.dataclass.Schedule
 import com.example.bodifyaifitness.dataclass.User
@@ -8,6 +9,7 @@ import com.example.bodifyaifitness.dataclass.WorkOutLog
 import com.example.bodifyaifitness.dataclass.WorkoutDay
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 
@@ -222,6 +224,50 @@ class FirebaseManager {
                 Log.e(TAG, "Lỗi lấy tất cả workout logs", e)
                 onFailure(e)
             }
+    }
+
+    // ── Chat Session ──────────────────────────────────────────────────────────
+
+    fun saveChatSession(
+        userId: String,
+        session: ChatSession,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        db.collection("users").document(userId)
+            .collection("chat_sessions").document(session.id)
+            .set(session)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lưu chat session", e); onFailure(e) }
+    }
+
+    fun getChatSessions(
+        userId: String,
+        onSuccess: (List<ChatSession>) -> Unit,
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        db.collection("users").document(userId)
+            .collection("chat_sessions")
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { result ->
+                val list = result.mapNotNull { it.toObject<ChatSession>() }
+                onSuccess(list)
+            }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi lấy chat sessions", e); onFailure(e) }
+    }
+
+    fun deleteChatSession(
+        userId: String,
+        sessionId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        db.collection("users").document(userId)
+            .collection("chat_sessions").document(sessionId)
+            .delete()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> Log.e(TAG, "Lỗi xóa chat session", e); onFailure(e) }
     }
 
     fun getWorkoutHistory(userId: String, onSuccess: (List<WorkOutLog>) -> Unit, onFailure: (Exception) -> Unit) {
