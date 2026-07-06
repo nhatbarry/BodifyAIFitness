@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.bodifyaifitness.composable.AiCameraFilterChip
 import com.example.bodifyaifitness.composable.MuscleGroupChipSection
 import com.example.bodifyaifitness.dataclass.WorkoutDay
 import com.example.bodifyaifitness.ui.theme.GymOrange
@@ -577,12 +578,12 @@ private fun ExercisePickerScreen(
     var selectedIds by remember(preSelectedIds) { mutableStateOf(preSelectedIds.toSet()) }
     val exerciseState by exerciseViewModel.exerciseState.collectAsState()
     val searchQuery by exerciseViewModel.searchQuery.collectAsState()
-    val searchResults by exerciseViewModel.searchResults.collectAsState()
+    val selectedCategories by exerciseViewModel.selectedCategories.collectAsState()
+    val aiCameraOnly by exerciseViewModel.aiCameraOnly.collectAsState()
 
-    LaunchedEffect(Unit) { exerciseViewModel.selectCategory("All") }
+    LaunchedEffect(Unit) { exerciseViewModel.resetFilters() }
 
-    val displayList = if (searchQuery.isNotEmpty()) searchResults
-                      else (exerciseState as? ExerciseState.Success)?.exercises ?: emptyList()
+    val displayList = (exerciseState as? ExerciseState.Success)?.exercises ?: emptyList()
 
     Column(
         modifier = Modifier
@@ -648,10 +649,18 @@ private fun ExercisePickerScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // Category chips
-        MuscleGroupChipSection(
-            onChipSelected = { exerciseViewModel.selectCategory(it) }
-        )
+        // Category chips + AI Camera filter
+        Row {
+            AiCameraFilterChip(
+                selected = aiCameraOnly,
+                onToggle = { exerciseViewModel.toggleAiCameraOnly() }
+            )
+            MuscleGroupChipSection(
+                selectedCategories = selectedCategories,
+                onChipToggled = { exerciseViewModel.toggleCategory(it) },
+                modifier = Modifier.weight(1f)
+            )
+        }
 
         // Exercise list with checkboxes
         LazyColumn(

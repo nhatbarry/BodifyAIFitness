@@ -140,6 +140,7 @@
     <string name="label_animation">Animation</string>
     <string name="error_exercise_not_found">Exercise not found</string>
     <string name="error_no_exercises">No exercises found</string>
+    <string name="filter_ai_camera">AI Camera</string>
 
     <!-- AI Coach -->
     <string name="title_ai_coach">AI Coach</string>

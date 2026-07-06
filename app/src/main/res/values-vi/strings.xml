@@ -140,6 +140,7 @@
     <string name="label_animation">Hoạt ảnh</string>
     <string name="error_exercise_not_found">Không tìm thấy bài tập</string>
     <string name="error_no_exercises">Không có bài tập nào</string>
+    <string name="filter_ai_camera">AI Camera</string>
 
     <!-- AI Coach -->
     <string name="title_ai_coach">AI Coach</string>

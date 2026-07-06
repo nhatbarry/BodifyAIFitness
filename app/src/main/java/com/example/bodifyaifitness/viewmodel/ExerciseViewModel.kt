@@ -25,14 +25,15 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
 
     private val _allExercises = MutableStateFlow<List<Exercise>>(emptyList())
 
-    private val _selectedCategory = MutableStateFlow("All")
-    val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
+    // Multi-select: rỗng = "All" (không lọc theo nhóm cơ nào)
+    private val _selectedCategories = MutableStateFlow<Set<String>>(emptySet())
+    val selectedCategories: StateFlow<Set<String>> = _selectedCategories.asStateFlow()
+
+    private val _aiCameraOnly = MutableStateFlow(false)
+    val aiCameraOnly: StateFlow<Boolean> = _aiCameraOnly.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    private val _searchResults = MutableStateFlow<List<Exercise>>(emptyList())
-    val searchResults: StateFlow<List<Exercise>> = _searchResults.asStateFlow()
 
     private val _exerciseState = MutableStateFlow<ExerciseState>(ExerciseState.Loading)
     val exerciseState: StateFlow<ExerciseState> = _exerciseState.asStateFlow()
@@ -77,39 +78,56 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun selectCategory(category: String) {
-        _selectedCategory.value = category
+    /** Bấm "All" -> bỏ hết lựa chọn; bấm 1 nhóm cơ -> bật/tắt nhóm đó (multi-select, OR). */
+    fun toggleCategory(category: String) {
+        _selectedCategories.value = if (category == "All") {
+            emptySet()
+        } else {
+            val current = _selectedCategories.value
+            if (category in current) current - category else current + category
+        }
         applyFilter()
-        _searchQuery.value = ""
-        _searchResults.value = emptyList()
     }
 
+    fun toggleAiCameraOnly() {
+        _aiCameraOnly.value = !_aiCameraOnly.value
+        applyFilter()
+    }
+
+    /** Gõ tên bài tập lọc trực tiếp danh sách chính, không còn dropdown gợi ý riêng. */
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        if (query.isBlank()) {
-            _searchResults.value = emptyList()
-            return
-        }
-        val category = _selectedCategory.value
-        val pool = if (category == "All") {
-            _allExercises.value
-        } else {
-            _allExercises.value.filter { it.category.equals(category, ignoreCase = true) }
-        }
-        _searchResults.value = pool
-            .filter { it.name.contains(query.trim(), ignoreCase = true) }
-            .take(8)
+        applyFilter()
     }
 
     fun clearSearch() {
         _searchQuery.value = ""
-        _searchResults.value = emptyList()
+        applyFilter()
+    }
+
+    /** Reset toàn bộ filter — dùng khi mở lại màn hình chọn bài tập (ExercisePickerScreen). */
+    fun resetFilters() {
+        _selectedCategories.value = emptySet()
+        _aiCameraOnly.value = false
+        _searchQuery.value = ""
+        applyFilter()
     }
 
     private fun applyFilter() {
-        val cat = _selectedCategory.value
-        val filtered = if (cat == "All") _allExercises.value
-        else _allExercises.value.filter { it.category.equals(cat, ignoreCase = true) }
+        val categories = _selectedCategories.value
+        val query = _searchQuery.value.trim()
+
+        var filtered = _allExercises.value
+        if (categories.isNotEmpty()) {
+            filtered = filtered.filter { ex -> categories.any { it.equals(ex.category, ignoreCase = true) } }
+        }
+        if (_aiCameraOnly.value) {
+            filtered = filtered.filter { it.isAISupported }
+        }
+        if (query.isNotEmpty()) {
+            filtered = filtered.filter { it.name.contains(query, ignoreCase = true) }
+        }
+
         _exerciseState.value = ExerciseState.Success(filtered)
     }
 }

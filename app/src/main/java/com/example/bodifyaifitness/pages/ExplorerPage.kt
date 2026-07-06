@@ -3,6 +3,7 @@ package com.example.bodifyaifitness.pages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bodifyaifitness.R
+import com.example.bodifyaifitness.composable.AiCameraFilterChip
 import com.example.bodifyaifitness.composable.ExerciseListSection
 import com.example.bodifyaifitness.composable.FeaturedWorkout
 import com.example.bodifyaifitness.composable.GreetingSection
@@ -36,11 +38,11 @@ fun ExplorerPage(
     scheduleViewModel: ScheduleViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
 ) {
-    val exerciseState    by exerciseViewModel.exerciseState.collectAsState()
-    val searchQuery      by exerciseViewModel.searchQuery.collectAsState()
-    val searchResults    by exerciseViewModel.searchResults.collectAsState()
-    val selectedCategory by exerciseViewModel.selectedCategory.collectAsState()
-    val scheduleState    by scheduleViewModel.scheduleState.collectAsState()
+    val exerciseState     by exerciseViewModel.exerciseState.collectAsState()
+    val searchQuery       by exerciseViewModel.searchQuery.collectAsState()
+    val selectedCategories by exerciseViewModel.selectedCategories.collectAsState()
+    val aiCameraOnly      by exerciseViewModel.aiCameraOnly.collectAsState()
+    val scheduleState     by scheduleViewModel.scheduleState.collectAsState()
     val userState        by userViewModel.userState.observeAsState()
 
     LaunchedEffect(Unit) {
@@ -73,13 +75,8 @@ fun ExplorerPage(
 
             SearchBarSection(
                 query = searchQuery,
-                results = searchResults,
-                selectedCategory = selectedCategory,
-                onQueryChange = { exerciseViewModel.onSearchQueryChange(it) },
-                onResultClick = { exercise ->
-                    exerciseViewModel.clearSearch()
-                    navController.navigate("exercise_detail/${exercise.id}")
-                }
+                selectedCategories = selectedCategories,
+                onQueryChange = { exerciseViewModel.onSearchQueryChange(it) }
             )
 
             FeaturedWorkout(
@@ -88,11 +85,19 @@ fun ExplorerPage(
                 onStartClick = onNavigateToStart
             )
 
-            MuscleGroupChipSection(
-                onChipSelected = { category ->
-                    exerciseViewModel.selectCategory(category)
-                }
-            )
+            Row {
+                AiCameraFilterChip(
+                    selected = aiCameraOnly,
+                    onToggle = { exerciseViewModel.toggleAiCameraOnly() }
+                )
+                MuscleGroupChipSection(
+                    selectedCategories = selectedCategories,
+                    onChipToggled = { category ->
+                        exerciseViewModel.toggleCategory(category)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             ExerciseListSection(
                 state = exerciseState,
