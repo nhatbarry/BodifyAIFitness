@@ -18,14 +18,14 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 /**
- * BroadcastReceiver kích hoạt lúc 15:00 hàng ngày.
+ * BroadcastReceiver kích hoạt lúc giờ user đã cài đặt hàng ngày.
  * Quy trình:
  *  1. Kiểm tra user đã đăng nhập chưa
  *  2. Lấy active schedule từ Firestore
  *  3. Tìm WorkoutDay của hôm nay → lấy exerciseIds
  *  4. Lấy tên bài tập từ exercises_library
- *  5. Hiện notification
- *  6. Lên lịch alarm cho ngày mai
+ *  5. Hiện notification (có lịch → danh sách bài tập / nghỉ → thông báo ngày nghỉ)
+ *  6. Lên lịch alarm cho ngày mai (theo giờ đã lưu trong NotificationPrefs)
  */
 class WorkoutReminderReceiver : BroadcastReceiver() {
 
@@ -40,8 +40,10 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
             } catch (e: Exception) {
                 Log.e(TAG, "Lỗi xử lý reminder", e)
             } finally {
-                // Lên lịch lại cho 15:00 ngày mai
-                NotificationHelper.scheduleWorkoutReminder(context)
+                // Lên lịch lại cho ngày mai theo giờ user đã cài đặt
+                if (NotificationPrefs.isEnabled(context)) {
+                    NotificationHelper.scheduleWorkoutReminder(context)
+                }
                 pendingResult.finish()
             }
         }
@@ -67,7 +69,8 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         )
 
         if (schedulesSnap.isEmpty) {
-            Log.d(TAG, "Không có schedule đang active")
+            Log.d(TAG, "Không có schedule đang active → thông báo ngày nghỉ")
+            NotificationHelper.showRestDayNotification(context)
             return
         }
 
@@ -78,7 +81,8 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         // ── 2. Tìm WorkoutDay của hôm nay ────────────────────────────────────
         val todayDay = schedule.days.firstOrNull { normDate(it.date) == today }
         if (todayDay == null || todayDay.exerciseIds.isEmpty()) {
-            Log.d(TAG, "Hôm nay không có lịch tập")
+            Log.d(TAG, "Hôm nay không có lịch tập → thông báo ngày nghỉ")
+            NotificationHelper.showRestDayNotification(context)
             return
         }
 
@@ -96,11 +100,12 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         }.sorted()
 
         if (names.isEmpty()) {
-            Log.d(TAG, "Không lấy được tên bài tập")
+            Log.d(TAG, "Không lấy được tên bài tập → thông báo ngày nghỉ")
+            NotificationHelper.showRestDayNotification(context)
             return
         }
 
-        // ── 4. Hiện notification ──────────────────────────────────────────────
+        // ── 4. Hiện notification danh sách bài tập ───────────────────────────
         Log.d(TAG, "Hiển thị notification: ${names.size} bài tập")
         NotificationHelper.showWorkoutNotification(context, names)
     }
@@ -115,3 +120,4 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 }
+

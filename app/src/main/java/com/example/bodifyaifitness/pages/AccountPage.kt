@@ -1,9 +1,11 @@
 package com.example.bodifyaifitness.pages
 
+import android.app.TimePickerDialog
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,22 +22,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +65,8 @@ import com.example.bodifyaifitness.R
 import com.example.bodifyaifitness.composable.BmiCard
 import com.example.bodifyaifitness.composable.WorkoutStreakChart
 import com.example.bodifyaifitness.dataclass.User
+import com.example.bodifyaifitness.notification.NotificationHelper
+import com.example.bodifyaifitness.notification.NotificationPrefs
 import com.example.bodifyaifitness.ui.theme.ChipInactive
 import com.example.bodifyaifitness.ui.theme.GymOrange
 import com.example.bodifyaifitness.ui.theme.GymSurfaceBg
@@ -222,6 +234,12 @@ fun AccountPage(
             }
         }
 
+        // ── Notification Settings Card ────────────────────────────────────────
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            NotificationSettingsCard()
+        }
+
         // ── BMI Card ──────────────────────────────────────────────────────────
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             BmiCard(bmi = bmi, heightCm = user?.height ?: 0f, weightKg = user?.weight ?: 0f)
@@ -248,4 +266,126 @@ private fun StatItem(label: String, value: String) {
 @Composable
 private fun StatDivider() {
     Box(modifier = Modifier.height(36.dp).width(1.dp).background(Color(0xFF2A2A3E)))
+}
+
+// ── Notification Settings Card ─────────────────────────────────────────────────
+
+@Composable
+private fun NotificationSettingsCard() {
+    val context = LocalContext.current
+
+    // Đọc trạng thái ban đầu từ SharedPreferences
+    var isEnabled by remember { mutableStateOf(NotificationPrefs.isEnabled(context)) }
+    var hour     by remember { mutableIntStateOf(NotificationPrefs.getHour(context)) }
+    var minute   by remember { mutableIntStateOf(NotificationPrefs.getMinute(context)) }
+
+    val timeLabel = remember(hour, minute) {
+        "%02d:%02d".format(hour, minute)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E1E2E), RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
+        // ── Tiêu đề section ───────────────────────────────────────────────────
+        Text(
+            text = "🔔 Nhắc nhở lịch tập",
+            color = TextWhite,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // ── Toggle bật / tắt ──────────────────────────────────────────────────
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (isEnabled) Icons.Default.NotificationsActive
+                                  else Icons.Default.NotificationsOff,
+                    contentDescription = null,
+                    tint = if (isEnabled) GymOrange else TextMuted,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isEnabled) "Đang bật" else "Đã tắt",
+                    color = if (isEnabled) GymOrange else TextMuted,
+                    fontSize = 14.sp
+                )
+            }
+            Switch(
+                checked = isEnabled,
+                onCheckedChange = { checked ->
+                    isEnabled = checked
+                    NotificationPrefs.setEnabled(context, checked)
+                    if (checked) {
+                        NotificationHelper.scheduleWorkoutReminder(context)
+                    } else {
+                        NotificationHelper.cancelWorkoutReminder(context)
+                    }
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor  = Color.White,
+                    checkedTrackColor  = GymOrange,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color(0xFF3A3A4E)
+                )
+            )
+        }
+
+        // ── Chọn giờ (chỉ hiện khi bật) ──────────────────────────────────────
+        if (isEnabled) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        tint = TextMuted,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Giờ nhận thông báo", color = TextMuted, fontSize = 13.sp)
+                }
+                // Nút chọn giờ → mở TimePickerDialog hệ thống
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF2A2A3E), RoundedCornerShape(10.dp))
+                        .clickable {
+                            TimePickerDialog(
+                                context,
+                                { _, selectedHour, selectedMinute ->
+                                    hour   = selectedHour
+                                    minute = selectedMinute
+                                    NotificationPrefs.setTime(context, selectedHour, selectedMinute)
+                                    // Reschedule với giờ mới
+                                    NotificationHelper.scheduleWorkoutReminder(context)
+                                },
+                                hour, minute,
+                                true   // 24h format
+                            ).show()
+                        }
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = timeLabel,
+                        color = GymOrange,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+        }
+    }
 }

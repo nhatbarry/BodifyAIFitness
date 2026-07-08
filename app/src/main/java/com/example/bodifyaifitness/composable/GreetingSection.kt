@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +30,9 @@ import com.example.bodifyaifitness.ui.theme.TextWhite
 
 @Composable
 fun GreetingSection(
-    name: String = "Athlete"
+    name: String = "Athlete",
+    todayExerciseCount: Int = 0,
+    onBellClick: () -> Unit = {}
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -50,21 +53,34 @@ fun GreetingSection(
             )
         }
 
-        IconButton(
-            onClick = { },
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(ChipInactive)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = stringResource(R.string.content_desc_notification),
-                tint = TextWhite,
-                modifier = Modifier.size(22.dp)
-            )
+        // ── Bell button với badge ─────────────────────────────────────────────
+        Box {
+            IconButton(
+                onClick = onBellClick,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(ChipInactive)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = stringResource(R.string.content_desc_notification),
+                    tint = if (todayExerciseCount > 0) GymOrange else TextWhite,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            // Badge chấm cam hiển thị khi có bài tập hôm nay
+            if (todayExerciseCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-2).dp, y = 2.dp)
+                        .clip(CircleShape)
+                        .background(GymOrange)
+                )
+            }
         }
     }
 }
-
-

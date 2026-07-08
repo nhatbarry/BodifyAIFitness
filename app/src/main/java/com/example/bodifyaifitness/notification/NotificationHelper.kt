@@ -13,9 +13,10 @@ import java.util.Calendar
 
 object NotificationHelper {
 
-    const val CHANNEL_ID         = "workout_reminder"
-    const val NOTIFICATION_ID    = 1001
-    const val ALARM_REQUEST_CODE = 2001
+    const val CHANNEL_ID           = "workout_reminder"
+    const val NOTIFICATION_ID      = 1001
+    const val NOTIFICATION_ID_REST = 1002   // Dùng cho thông báo ngày nghỉ
+    const val ALARM_REQUEST_CODE   = 2001
 
     // ── Channel ───────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ object NotificationHelper {
             "Nhắc nhở tập luyện",
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Thông báo lịch tập lúc 15:00 mỗi ngày"
+            description = "Thông báo lịch tập hàng ngày theo giờ đã cài đặt"
         }
         context.getSystemService(NotificationManager::class.java)
             .createNotificationChannel(channel)
@@ -34,19 +35,23 @@ object NotificationHelper {
     // ── Schedule alarm ────────────────────────────────────────────────────────
 
     /**
-     * Lên lịch alarm lúc 15:00 hôm nay (nếu đã qua thì lên lịch ngày mai).
+     * Lên lịch alarm vào giờ/phút do user cài đặt (đọc từ [NotificationPrefs]).
+     * Nếu giờ đó đã qua trong ngày hôm nay → lên lịch cho ngày mai.
      * Sau khi alarm kích hoạt, [WorkoutReminderReceiver] sẽ tự lên lịch lại cho hôm sau.
      */
     fun scheduleWorkoutReminder(context: Context) {
+        val hour   = NotificationPrefs.getHour(context)
+        val minute = NotificationPrefs.getMinute(context)
+
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val pendingIntent = buildPendingIntent(context)
 
         val targetMillis = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 15)
-            set(Calendar.MINUTE, 0)
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-            // Nếu 15:00 hôm nay đã qua → lên lịch cho ngày mai
+            // Nếu giờ hôm nay đã qua → lên lịch cho ngày mai
             if (timeInMillis <= System.currentTimeMillis()) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
@@ -79,7 +84,7 @@ object NotificationHelper {
             .cancel(buildPendingIntent(context))
     }
 
-    // ── Show notification ─────────────────────────────────────────────────────
+    // ── Show notification: có lịch tập ────────────────────────────────────────
 
     fun showWorkoutNotification(context: Context, exerciseNames: List<String>) {
         val shortList  = exerciseNames.take(5)
@@ -106,6 +111,21 @@ object NotificationHelper {
 
         context.getSystemService(NotificationManager::class.java)
             .notify(NOTIFICATION_ID, notification)
+    }
+
+    // ── Show notification: ngày nghỉ ──────────────────────────────────────────
+
+    fun showRestDayNotification(context: Context) {
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("🎉 Hôm nay là ngày nghỉ!")
+            .setContentText("Hãy nghỉ ngơi và phục hồi cơ thể. Ngày mai tiếp tục chinh phục nhé!")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setAutoCancel(true)
+            .build()
+
+        context.getSystemService(NotificationManager::class.java)
+            .notify(NOTIFICATION_ID_REST, notification)
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

@@ -30,3 +30,4 @@ local.properties
 
 # Raw exercise dataset (images/gifs/json) — goes to Firestore + a separate media repo, not here
 /to_imported/
+bao_cao_bai_tap_lon.md
